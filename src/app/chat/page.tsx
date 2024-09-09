@@ -34,8 +34,8 @@ const ChatPage = () => {
   useEffect(() => {
     const fetchConversations = async () => {
       try {
-        const response = await fetch(`http://localhost:3333/conversations?userId=${userId}`);
-        const data: Conversation[] = await response.json();
+        const response = await fetch(`http://localhost:3333/conversations/user?userId=${userId}`);
+        const data = await response.json();
         setConversations(data);
       } catch (error) {
         console.error("Erro ao buscar conversas:", error);
