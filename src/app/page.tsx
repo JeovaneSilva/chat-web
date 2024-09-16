@@ -1,5 +1,5 @@
-// src/app/page.tsx
-"use client"; // Adicione isso no início do arquivo
+
+"use client";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
