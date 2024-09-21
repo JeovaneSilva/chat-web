@@ -1,8 +1,56 @@
 "use client";
 import Image from "next/image";
 import imagelogin from "../assets/imagemlogin.png";
+import { useState } from "react";
+import { useRouter } from "next/navigation"; // Importando useRouter
 
 const Login = () => {
+  const [email, setEmail] = useState("");
+  const [senha, setSenha] = useState("");
+  const router = useRouter(); 
+
+  // Função para salvar o token JWT nos cookies
+  const setCookie = (name: string, value: string, days: number) => {
+    const expires = new Date(Date.now() + days * 864e5).toUTCString();
+    document.cookie = `${name}=${encodeURIComponent(value)}; expires=${expires}; path=/`;
+  };
+
+  const loginUser = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    try {
+      const res = await fetch("http://localhost:3333/auth/login", {
+        method: "POST",
+        body: JSON.stringify({
+          email: email,
+          password: senha,
+        }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!res.ok) {
+        throw new Error(`Erro no login: ${res.status} ${res.statusText}`);
+      }
+
+      const data = await res.json();
+      const token = data.access_token;
+
+      // Salvando o token JWT nos cookies
+      setCookie("token", token, 1); // Expira em 7 dias
+
+      if (data.access_token) {
+        router.push("/chat");
+      } else {
+        console.error("Token de acesso não encontrado.");
+      }
+      
+    } catch (error) {
+      console.error("Erro ao fazer login:", error);
+    }
+  };
+
   return (
     <main className="min-h-screen flex items-center justify-center bg-gray-900">
       <div className="flex flex-col md:flex-row items-center justify-center">
@@ -17,31 +65,30 @@ const Login = () => {
           </div>
         </aside>
 
-        {/* Seção do formulário de login */}
-        <section className="bg-gray-800 p-8 rounded-lg shadow-md w-[300px] max-w-sm">
-          <h2 className="text-3xl font-bold text-[#7E57C2] text-center mb-8">LOGIN</h2>
-          <form>
+        <section className="bg-gray-800 p-8 rounded-lg shadow-md w-[350px] max-w-sm">
+          <h2 className="text-3xl font-bold text-[#7E57C2] text-center mb-8">
+            LOGIN
+          </h2>
+          <form onSubmit={loginUser}>
             <div className="mb-4">
-              <label htmlFor="username" className="block text-[#7E57C2] mb-2">
-                Usuário
-              </label>
+              <label className="block text-[#7E57C2] mb-2">Email</label>
               <input
-                id="username"
-                type="text"
+                type="email"
                 placeholder="Usuário"
+                onChange={(e) => setEmail(e.target.value)}
                 className="w-full px-4 py-2 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400"
+                required
               />
             </div>
 
             <div className="mb-6">
-              <label htmlFor="password" className="block text-[#7E57C2] mb-2">
-                Senha
-              </label>
+              <label className="block text-[#7E57C2] mb-2">Senha</label>
               <input
-                id="password"
                 type="password"
                 placeholder="Senha"
+                onChange={(e) => setSenha(e.target.value)}
                 className="w-full px-4 py-2 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400"
+                required
               />
             </div>
 
