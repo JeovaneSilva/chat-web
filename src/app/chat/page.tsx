@@ -21,6 +21,12 @@ interface Message {
   senderId: number;
   conversationId: number;
 }
+
+interface User {
+  id: number;
+  name: string;
+}
+
 interface DecodedToken {
   exp: number;
   iat: number;
@@ -28,16 +34,17 @@ interface DecodedToken {
 }
 
 const ChatPage = () => {
-  const router = useRouter();
-  const searchParams = useSearchParams();
   const [userId, setUserId] = useState<number>(0);
-
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [selectedConversation, setSelectedConversation] = useState<
     number | null
   >(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [allUsers, setAllUsers] = useState<User[]>([]);
+  const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
+  const [showModal, setShowModal] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
@@ -60,9 +67,9 @@ const ChatPage = () => {
 
   useEffect(() => {
     const fetchAndDecodeToken = () => {
-      const token = getCookie("token"); // Busca o token do cookie
+      const token = getCookie("token");
       if (token) {
-        const decodedToken = decodeToken(token); // Decodifica o token
+        const decodedToken = decodeToken(token);
         if (decodedToken) {
           setUserId(decodedToken.sub);
           console.log("Token JWT decodificado:", decodedToken);
@@ -114,7 +121,6 @@ const ChatPage = () => {
   }, [selectedConversation]);
 
   useEffect(() => {
-    // Rolar para o fim da lista de mensagens quando `messages` mudar
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: "instant" });
     }
@@ -136,13 +142,7 @@ const ChatPage = () => {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
       const data = await response.json();
-      if (Array.isArray(data)) {
-        setMessages(data);
-      } else {
-        console.error("Dados de mensagens não são um array:", data);
-        setMessages([]);
-      }
-      console.log("teste");
+      setMessages(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error("Erro ao buscar mensagens:", error);
       setMessages([]);
@@ -161,33 +161,136 @@ const ChatPage = () => {
     setNewMessage("");
   };
 
+  // Função para carregar todos os usuários uma única vez
+  const fetchAllUsers = async () => {
+    const token = getCookie("token");
+    try {
+      const response = await fetch("http://localhost:3333/users", {
+        method: "GET",
+        headers: { authorization: `Bearer ${token}` },
+        credentials: "include",
+      });
+      const data = await response.json();
+      setAllUsers(data);
+    } catch (error) {
+      console.error("Erro ao buscar usuários:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchAllUsers();
+  }, []);
+
+  // Função de filtragem local com base na pesquisa
+  const handleSearch = (query: string) => {
+    setSearchQuery(query);
+
+    if (query.trim() !== "") {
+      const filtered = allUsers.filter((user) =>
+        user.name.toLowerCase().includes(query.toLowerCase())
+      );
+      setFilteredUsers(filtered);
+      setShowModal(true); // Exibe o modal quando a pesquisa é feita
+    } else {
+      setFilteredUsers([]);
+      setShowModal(false); // Esconde o modal se a pesquisa for apagada
+    }
+  };
+
+  const CriarConversa = async (senderId: number, recepId: number) => {
+    const token = getCookie("token");
+    try {
+      const response = await fetch(
+        "http://localhost:3333/conversations/create",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json", // Adicionando o Content-Type
+            authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            user1Id: senderId, // Aqui você estava passando 'userId' em vez de 'senderId'
+            user2Id: recepId,
+          }),
+          credentials: "include",
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Erro HTTP! Status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      setAllUsers(data); // Certifique-se de que o que está retornando é a lista de usuários.
+      alert("criada");
+    } catch (error) {
+      console.error("Erro ao criar a conversa:", error);
+    }
+  };
+
   return (
-    <main>
+    <main className="w-screen h-screen relative">
       {conversations.length > 0 ? (
-        <div className="flex">
+        <div className="flex w-screen h-screen">
           <div className="w-1/4 p-4 bg-gray-100">
-            <h2 className="text-xl font-bold mb-4">Conversas</h2>
-            <ul>
-              {conversations.map((conversation) => (
-                <li
-                  key={conversation.id}
-                  onClick={() => selectConversation(conversation.id)}
-                  className="cursor-pointer hover:bg-gray-200 p-2 rounded"
-                >
-                  {`Conversa com ${
-                    conversation.user1Id === Number(userId)
-                      ? `Usuário ${conversation.user2Id}`
-                      : `Usuário ${conversation.user1Id}`
-                  }`}
-                </li>
-              ))}
-            </ul>
+            <div>
+              <div className="mb-4">
+                <h2 className="text-xl font-bold mb-4">Conversas</h2>
+                <input
+                  type="search"
+                  placeholder="Buscar usuários"
+                  className="w-4/5 h-6 p-4 border-2 border-black rounded-[18px] outline-none"
+                  value={searchQuery}
+                  onChange={(e) => handleSearch(e.target.value)}
+                />
+              </div>
+              <ul>
+                {conversations.map((conversation) => (
+                  <li
+                    key={conversation.id}
+                    onClick={() => selectConversation(conversation.id)}
+                    className="cursor-pointer hover:bg-gray-200 p-2 rounded"
+                  >
+                    {`Conversa com ${
+                      conversation.user1Id === Number(userId)
+                        ? `Usuário ${conversation.user2Id}`
+                        : `Usuário ${conversation.user1Id}`
+                    }`}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div>
+              {showModal && (
+                <div className="absolute left-0 w-1/5 ml-4 rounded-[10px] top-[10px] mt-24 bg-white  p-4 z-10">
+                  <h2 className="text-lg font-bold mb-4">
+                    Resultados da Busca
+                  </h2>
+                  <ul className="flex flex-col gap-1">
+                    {filteredUsers.map((user) => (
+                      <li
+                        key={user.id}
+                        className="p-2 hover:bg-gray-200 flex items-center justify-between"
+                      >
+                        {user.name}
+                        <button
+                          onClick={() => CriarConversa(userId, user.id)}
+                          className="bg-[#7E57C2] text-white font-bold rounded-[10px] text-sm p-2"
+                        >
+                          Conversar
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
           </div>
 
-          <div className="w-3/4 flex flex-col bg-white p-4 shadow-lg">
+          <div className="w-3/4 h-screen flex flex-col bg-white p-4 shadow-lg">
             {selectedConversation ? (
               <>
-                <div className="h-96 overflow-y-auto p-4 mb-4 rounded-md border">
+                <div className="h-full overflow-y-auto p-4 mb-4 rounded-md border">
                   <ul className="space-y-2 flex flex-col">
                     {messages.map((message) => (
                       <li
@@ -205,37 +308,66 @@ const ChatPage = () => {
                       </li>
                     ))}
                     <div ref={messagesEndRef} />{" "}
-                    {/* Ref para rolar para o fim */}
                   </ul>
                 </div>
                 <div className="flex">
                   <input
                     type="text"
+                    placeholder="Digite sua mensagem..."
                     value={newMessage}
                     onChange={(e) => setNewMessage(e.target.value)}
-                    className="flex-1 p-2 border rounded"
-                    placeholder="Digite uma mensagem"
+                    className="w-full p-2 border rounded-l-md"
                   />
                   <button
                     onClick={handleSendMessage}
-                    className="ml-2 p-2 bg-blue-500 text-white rounded"
+                    className="bg-blue-500 text-white p-2 rounded-r-md"
                   >
                     Enviar
                   </button>
                 </div>
               </>
             ) : (
-              <p>Selecione uma conversa para ver as mensagens.</p>
+              <div>Clique em uam conversa para abir</div>
             )}
           </div>
         </div>
       ) : (
-        <section className="flex flex-col w-scren h-screen items-center justify-center gap-3">
+        <section className="flex flex-col w-screen h-screen items-center justify-center gap-3">
           <div>
-            <input className="border-2 border-black" type="search" name="" id="" />
+            <input
+              className="border-2 border-black"
+              type="search"
+              placeholder="Buscar usuários"
+              value={searchQuery}
+              onChange={(e) => handleSearch(e.target.value)} // Lógica de busca
+            />
           </div>
-          <Image className="mt-10 w-[300px] h-[300px] sm:w-[400px] sm:h-[400px] sm:mt-2" src={imagechat} alt="Astronaut Cat" />
-          <p className="text-sm max-w-[260px] text-center font-bold sm:text-lg sm:max-w-[370px]">voce não possui nenhuma conversa, busque por usuários!</p>
+          <Image
+            className="mt-10 w-[300px] h-[300px] sm:w-[400px] sm:h-[400px] sm:mt-2"
+            src={imagechat}
+            alt="Astronaut Cat"
+          />
+          <p className="text-sm max-w-[260px] text-center font-bold sm:text-lg sm:max-w-[370px]">
+            Você não possui nenhuma conversa, busque por usuários!
+          </p>
+          {filteredUsers.length > 0 && (
+            <ul className="w-64 mt-4 border border-gray-300 p-4 rounded-lg bg-white">
+              {filteredUsers.map((user) => (
+                <li
+                  key={user.id}
+                  className="p-2 hover:bg-gray-200 flex items-center justify-between"
+                >
+                  {user.name}
+                  <button
+                    onClick={() => CriarConversa(userId, user.id)}
+                    className="bg-[#7E57C2] text-white font-bold rounded-[10px] text-sm p-2"
+                  >
+                    Conversar
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
         </section>
       )}
     </main>
