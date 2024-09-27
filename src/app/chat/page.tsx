@@ -1,11 +1,15 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+// import { useRouter, useSearchParams } from "next/navigation";
 import { jwtDecode } from "jwt-decode";
 import Image from "next/image";
 import imagechat from "../../assets/imagechat.png";
 import io from "socket.io-client";
+import { BiMessageAdd, BiMessageDetail } from "react-icons/bi";
+import { MdOutlineMailOutline } from "react-icons/md";
+import { FaRegCircleUser } from "react-icons/fa6";
+import imagemlogin from "@/assets/imagemlogin.png";
 
 const socket = io("http://localhost:3333");
 
@@ -45,6 +49,9 @@ const ChatPage = () => {
   const [allUsers, setAllUsers] = useState<User[]>([]);
   const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
   const [showModal, setShowModal] = useState(false);
+  const [conversasModal, setconversasModal] = useState(true);
+  const [addConversaModal, setaddConversaModal] = useState(false);
+  const [convitesModal, setconvitesModal] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
@@ -228,66 +235,149 @@ const ChatPage = () => {
     }
   };
 
+  const showModalConversas = () => {
+    setconversasModal(true);
+    setaddConversaModal(false);
+    setconvitesModal(false);
+  };
+
+  const modalConversas = () => {
+    return (
+      <div className="text-white w-full pt-4 pl-6">
+        <div className="mb-4 flex flex-col w-full">
+          <h2 className="text-2xl font-bold mb-4">Conversas</h2>
+          <input
+            type="search"
+            placeholder="Buscar suas conversas"
+            className="w-[95%] h-6 text-black p-4 border border-black rounded-[10px] outline-none"
+          />
+        </div>
+        <ul>
+          {conversations.map((conversation) => (
+            <li
+              key={conversation.id}
+              onClick={() => selectConversation(conversation.id)}
+              className="cursor-pointer hover:bg-gray-200 p-2 rounded"
+            >
+              {`Conversa com ${
+                conversation.user1Id === Number(userId)
+                  ? `Usuário ${conversation.user2Id}`
+                  : `Usuário ${conversation.user1Id}`
+              }`}
+            </li>
+          ))}
+        </ul>
+      </div>
+    );
+  };
+
+  const showModalAddConversa = () => {
+    setconversasModal(false);
+    setaddConversaModal(true);
+    setconvitesModal(false);
+  };
+
+  const addConversas = () => {
+    return (
+      <div className="text-white w-full pt-4 pl-6">
+        <div className="mb-4 flex flex-col w-full">
+          <h2 className="text-2xl font-bold mb-4">Pesquisa</h2>
+          <input
+            type="search"
+            placeholder="Buscar usuários"
+            className="w-[95%] h-6 p-4 text-black border border-black rounded-[10px] outline-none"
+            value={searchQuery}
+            onChange={(e) => handleSearch(e.target.value)}
+          />
+        </div>
+        <div className="flex w-full">
+          {showModal && (
+            <div className="static w-[95%] rounded-[10px]  z-10">
+              <h2 className="text-lg font-bold mb-4">Perfis</h2>
+              <div className="flex flex-col">
+                {filteredUsers.map((user) => (
+                  <div
+                    key={user.id}
+                    className="p-2  hover:bg-gray-200 font-bold text-[#122f42] flex items-center justify-between"
+                  >
+                    <div className="flex items-center gap-5">
+                      
+                      <div className="flex p-1 border border-black rounded-[100%]">
+                        <Image
+                          src={imagechat}
+                          alt="Astronaut Cat"
+                          width={55}
+                          height={55}
+                        />
+                      </div>
+                      <p className="text-xl">{user.name}</p>
+                    </div>
+                    <button
+                      onClick={() => CriarConversa(userId, user.id)}
+                      className="bg-[#7E57C2] text-white font-bold rounded-[10px] text-sm p-2"
+                    >
+                      convidar
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  const showModalConvites = () => {
+    setconversasModal(false);
+    setaddConversaModal(false);
+    setconvitesModal(true);
+  };
+
+  const convitesChat = () => {
+    return <div>convites</div>;
+  };
+
   return (
     <main className="w-screen h-screen relative">
       {conversations.length > 0 ? (
         <div className="flex w-screen h-screen">
-          <div className="w-1/4 p-4 bg-gray-100">
-            <div>
-              <div className="mb-4">
-                <h2 className="text-xl font-bold mb-4">Conversas</h2>
-                <input
-                  type="search"
-                  placeholder="Buscar usuários"
-                  className="w-4/5 h-6 p-4 border-2 border-black rounded-[18px] outline-none"
-                  value={searchQuery}
-                  onChange={(e) => handleSearch(e.target.value)}
-                />
-              </div>
-              <ul>
-                {conversations.map((conversation) => (
-                  <li
-                    key={conversation.id}
-                    onClick={() => selectConversation(conversation.id)}
-                    className="cursor-pointer hover:bg-gray-200 p-2 rounded"
-                  >
-                    {`Conversa com ${
-                      conversation.user1Id === Number(userId)
-                        ? `Usuário ${conversation.user2Id}`
-                        : `Usuário ${conversation.user1Id}`
-                    }`}
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div>
-              {showModal && (
-                <div className="absolute left-0 w-1/5 ml-4 rounded-[10px] top-[10px] mt-24 bg-white  p-4 z-10">
-                  <h2 className="text-lg font-bold mb-4">
-                    Resultados da Busca
-                  </h2>
-                  <ul className="flex flex-col gap-1">
-                    {filteredUsers.map((user) => (
-                      <li
-                        key={user.id}
-                        className="p-2 hover:bg-gray-200 flex items-center justify-between"
-                      >
-                        {user.name}
-                        <button
-                          onClick={() => CriarConversa(userId, user.id)}
-                          className="bg-[#7E57C2] text-white font-bold rounded-[10px] text-sm p-2"
-                        >
-                          Conversar
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
+          <div className="w-2/5 bg-[#4180ab] flex ">
+            <div className="w-[80px] bg-[#8ab3cf] flex flex-col items-center justify-between">
+              <div>
+                <div className="mt-5 bg-white/50 p-2 rounded-[100%] flex ">
+                  <button onClick={showModalConversas}>
+                    <BiMessageDetail className="text-3xl" />
+                  </button>
                 </div>
-              )}
+                <div className="mt-5 bg-white/50 p-2 rounded-[100%] flex ">
+                  <button onClick={showModalAddConversa}>
+                    <BiMessageAdd className="text-3xl" />
+                  </button>
+                </div>
+
+                <div className="mt-5 bg-white/50 p-2 rounded-[100%] flex ">
+                  <button onClick={showModalConvites}>
+                    <MdOutlineMailOutline className="text-3xl " />
+                  </button>
+                </div>
+              </div>
+              <div className="mb-5">
+                <div className="mt-5 bg-white/50 p-2 rounded-[100%] flex ">
+                  <button>
+                    <FaRegCircleUser className="text-3xl " />
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div className="w-full">
+              {conversasModal && modalConversas()}
+              {addConversaModal && addConversas()}
+              {convitesModal && convitesChat()}
             </div>
           </div>
 
-          <div className="w-3/4 h-screen flex flex-col bg-white p-4 shadow-lg">
+          <div className="w-3/4 h-screen flex flex-col bg-[#8ab3cf] p-4 shadow-lg">
             {selectedConversation ? (
               <>
                 <div className="h-full overflow-y-auto p-4 mb-4 rounded-md border">
