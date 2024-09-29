@@ -17,6 +17,9 @@ interface Conversation {
   id: number;
   user1Id: number;
   user2Id: number;
+  user2: {
+    name: string;
+  };
 }
 
 interface Message {
@@ -48,12 +51,80 @@ const ChatPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [allUsers, setAllUsers] = useState<User[]>([]);
   const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
+  const [sentInvites, setSentInvites] = useState<User[]>([]);
+  const [receivedInvites, setReceivedInvites] = useState<User[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [conversasModal, setconversasModal] = useState(true);
   const [addConversaModal, setaddConversaModal] = useState(false);
   const [convitesModal, setconvitesModal] = useState(false);
+  const [perfilModal, setPerfilModal] = useState(false);
+  const [modalAberto, setModalAberto] = useState("conversas");
 
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
+
+  // Função para buscar os convites (enviados e recebidos)
+  const fetchInvites = async () => {
+    const token = getCookie("token");
+    try {
+      const response = await fetch(`http://localhost:3333/convites`, {
+        method: "GET",
+        headers: { authorization: `Bearer ${token}` },
+        credentials: "include",
+      });
+      const data = await response.json();
+      setSentInvites(data.sent);
+      setReceivedInvites(data.received);
+    } catch (error) {
+      console.error("Erro ao buscar convites:", error);
+    }
+  };
+
+  // Enviar um convite
+  const enviarConvite = async (recepId: number) => {
+    const token = getCookie("token");
+    try {
+      const response = await fetch("http://localhost:3333/convites/send", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ senderId: userId, receiverId: recepId }),
+        credentials: "include",
+      });
+      if (response.ok) {
+        alert("Convite enviado com sucesso!");
+        fetchInvites(); // Atualiza a lista de convites
+      } else {
+        console.error("Erro ao enviar convite");
+      }
+    } catch (error) {
+      console.error("Erro ao enviar convite:", error);
+    }
+  };
+
+  // Aceitar um convite
+  const aceitarConvite = async (invitationId: number) => {
+    const token = getCookie("token");
+    try {
+      const response = await fetch(
+        `http://localhost:3333/convites/accept/${invitationId}`,
+        {
+          method: "POST",
+          headers: { authorization: `Bearer ${token}` },
+          credentials: "include",
+        }
+      );
+      if (response.ok) {
+        alert("Convite aceito com sucesso!");
+        fetchInvites(); // Atualiza a lista de convites
+      } else {
+        console.error("Erro ao aceitar convite");
+      }
+    } catch (error) {
+      console.error("Erro ao aceitar convite:", error);
+    }
+  };
 
   const getCookie = (name: string): string | null => {
     const cookie = document.cookie
@@ -237,13 +308,15 @@ const ChatPage = () => {
 
   const showModalConversas = () => {
     setconversasModal(true);
+    setModalAberto("conversas");
     setaddConversaModal(false);
     setconvitesModal(false);
+    setPerfilModal(false);
   };
 
   const modalConversas = () => {
     return (
-      <div className="text-white w-full pt-4 pl-6">
+      <div className="text-white w-full pt-4 pl-6 items-center">
         <div className="mb-4 flex flex-col w-full">
           <h2 className="text-2xl font-bold mb-4">Conversas</h2>
           <input
@@ -252,29 +325,48 @@ const ChatPage = () => {
             className="w-[95%] h-6 text-black p-4 border border-black rounded-[10px] outline-none"
           />
         </div>
-        <ul>
+        <div className="mt-10">
           {conversations.map((conversation) => (
-            <li
+            <div
               key={conversation.id}
+              className="hover:bg-gray-200 cursor-pointer font-bold text-[#122f42] flex items-end flex-col w-[95%]"
               onClick={() => selectConversation(conversation.id)}
-              className="cursor-pointer hover:bg-gray-200 p-2 rounded"
             >
-              {`Conversa com ${
-                conversation.user1Id === Number(userId)
-                  ? `Usuário ${conversation.user2Id}`
-                  : `Usuário ${conversation.user1Id}`
-              }`}
-            </li>
+              <hr className="w-4/5 mb-2 " />
+              <div className="flex items-center justify-between w-full pr-2 pb-2">
+                <div className="flex items-center gap-5">
+                  <div className="flex p-1 border border-black rounded-[100%] ml-2">
+                    <Image
+                      src={imagechat}
+                      alt="Astronaut Cat"
+                      width={50}
+                      height={50}
+                    />
+                  </div>
+                  <p className="text-2xl">
+                    {" "}
+                    {`${
+                      conversation.user1Id === Number(userId)
+                        ? `${conversation.user2.name} `
+                        : ` ${conversation.user1Id}`
+                    }`}
+                  </p>
+                </div>
+              </div>
+            </div>
           ))}
-        </ul>
+        </div>
       </div>
     );
   };
+  // className="cursor-pointer hover:bg-gray-200 p-2 rounded text-2xl"
 
   const showModalAddConversa = () => {
     setconversasModal(false);
     setaddConversaModal(true);
+    setModalAberto("addconversa");
     setconvitesModal(false);
+    setPerfilModal(false);
   };
 
   const addConversas = () => {
@@ -298,26 +390,28 @@ const ChatPage = () => {
                 {filteredUsers.map((user) => (
                   <div
                     key={user.id}
-                    className="p-2  hover:bg-gray-200 font-bold text-[#122f42] flex items-center justify-between"
+                    className="hover:bg-gray-200 font-bold text-[#122f42] flex items-end flex-col "
                   >
-                    <div className="flex items-center gap-5">
-                      
-                      <div className="flex p-1 border border-black rounded-[100%]">
-                        <Image
-                          src={imagechat}
-                          alt="Astronaut Cat"
-                          width={55}
-                          height={55}
-                        />
+                    <hr className="w-4/5 mb-2 " />
+                    <div className="flex items-center justify-between w-full pr-2 pb-2">
+                      <div className="flex items-center gap-5">
+                        <div className="flex p-1 border border-black rounded-[100%] ml-2">
+                          <Image
+                            src={imagechat}
+                            alt="Astronaut Cat"
+                            width={50}
+                            height={50}
+                          />
+                        </div>
+                        <p className="text-xl">{user.name}</p>
                       </div>
-                      <p className="text-xl">{user.name}</p>
+                      <button
+                        onClick={() => CriarConversa(userId, user.id)}
+                        className="bg-[#7E57C2] text-white font-bold rounded-[10px] text-sm p-2"
+                      >
+                        convidar
+                      </button>
                     </div>
-                    <button
-                      onClick={() => CriarConversa(userId, user.id)}
-                      className="bg-[#7E57C2] text-white font-bold rounded-[10px] text-sm p-2"
-                    >
-                      convidar
-                    </button>
                   </div>
                 ))}
               </div>
@@ -332,11 +426,74 @@ const ChatPage = () => {
     setconversasModal(false);
     setaddConversaModal(false);
     setconvitesModal(true);
+    setPerfilModal(false);
+    setModalAberto("convites");
   };
 
   const convitesChat = () => {
-    return <div>convites</div>;
+    return (
+      <div className="text-white w-full pt-4 pl-6">
+        <div>
+          <h2 className="text-2xl font-bold mb-4">Convites Enviados</h2>
+          <div className="mt-10">
+            {Array.isArray(sentInvites) && sentInvites.length > 0 ? (
+              sentInvites.map((invite) => (
+                <div key={invite.id} className="font-bold text-[#122f42]">
+                  Convite enviado para {invite.name}
+                </div>
+              ))
+            ) : (
+              <p>Você não enviou nenhum convite.</p>
+            )}
+          </div>
+        </div>
+        <div>
+          <h2 className="text-2xl font-bold mt-6">Convites Recebidos</h2>
+          <div className="mt-10">
+            {receivedInvites.length > 0 ? (
+              receivedInvites.map((invite) => (
+                <div
+                  key={invite.id}
+                  className="flex items-center justify-between"
+                >
+                  <p className="font-bold text-[#122f42]">
+                    Convite de {invite.name}
+                  </p>
+                  <button
+                    onClick={() => aceitarConvite(invite.id)}
+                    className="bg-[#7E57C2] text-white font-bold rounded-[10px] text-sm p-2"
+                  >
+                    Aceitar
+                  </button>
+                </div>
+              ))
+            ) : (
+              <p>Você não recebeu nenhum convite.</p>
+            )}
+          </div>
+        </div>
+      </div>
+    );
   };
+
+  // Chamando as funções
+  useEffect(() => {
+    fetchInvites(); // Busca os convites enviados e recebidos ao carregar a página
+  }, [userId]);
+
+  const showModalPerfil = () => {
+    setconversasModal(false);
+    setaddConversaModal(false);
+    setconvitesModal(false);
+    setPerfilModal(true);
+    setModalAberto("perfil");
+  };
+
+  const perfil = () => {
+    return <div>perfil</div>;
+  };
+
+  
 
   return (
     <main className="w-screen h-screen relative">
@@ -345,26 +502,48 @@ const ChatPage = () => {
           <div className="w-2/5 bg-[#4180ab] flex ">
             <div className="w-[80px] bg-[#8ab3cf] flex flex-col items-center justify-between">
               <div>
-                <div className="mt-5 bg-white/50 p-2 rounded-[100%] flex ">
+                <div
+                  className={`mt-5  p-2 rounded-[100%] flex ${
+                    modalAberto === "conversas"
+                      ? "bg-white/50"
+                      : "bg-transparent"
+                  } `}
+                >
                   <button onClick={showModalConversas}>
                     <BiMessageDetail className="text-3xl" />
                   </button>
                 </div>
-                <div className="mt-5 bg-white/50 p-2 rounded-[100%] flex ">
+                <div
+                  className={`mt-5  p-2 rounded-[100%] flex ${
+                    modalAberto === "addconversa"
+                      ? "bg-white/50"
+                      : "bg-transparent"
+                  } `}
+                >
                   <button onClick={showModalAddConversa}>
                     <BiMessageAdd className="text-3xl" />
                   </button>
                 </div>
 
-                <div className="mt-5 bg-white/50 p-2 rounded-[100%] flex ">
+                <div
+                  className={`mt-5  p-2 rounded-[100%] flex ${
+                    modalAberto === "convites"
+                      ? "bg-white/50"
+                      : "bg-transparent"
+                  } `}
+                >
                   <button onClick={showModalConvites}>
                     <MdOutlineMailOutline className="text-3xl " />
                   </button>
                 </div>
               </div>
               <div className="mb-5">
-                <div className="mt-5 bg-white/50 p-2 rounded-[100%] flex ">
-                  <button>
+                <div
+                  className={`mt-5  p-2 rounded-[100%] flex ${
+                    modalAberto === "perfil" ? "bg-white/50" : "bg-transparent"
+                  } `}
+                >
+                  <button onClick={showModalPerfil}>
                     <FaRegCircleUser className="text-3xl " />
                   </button>
                 </div>
@@ -374,6 +553,7 @@ const ChatPage = () => {
               {conversasModal && modalConversas()}
               {addConversaModal && addConversas()}
               {convitesModal && convitesChat()}
+              {perfilModal && perfil()}
             </div>
           </div>
 
@@ -417,7 +597,7 @@ const ChatPage = () => {
                 </div>
               </>
             ) : (
-              <div>Clique em uam conversa para abir</div>
+              <div>Clique em uma conversa para abir</div>
             )}
           </div>
         </div>
