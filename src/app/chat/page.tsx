@@ -3,14 +3,12 @@
 import { useState, useEffect, useRef } from "react";
 // import { useRouter, useSearchParams } from "next/navigation";
 import { jwtDecode } from "jwt-decode";
-import Image from "next/image";
-import imagechat from "../../assets/imagechat.png";
 import io from "socket.io-client";
 import { BiMessageAdd, BiMessageDetail } from "react-icons/bi";
 import { MdOutlineMailOutline } from "react-icons/md";
 import { FaRegCircleUser } from "react-icons/fa6";
 import { FaCheck, FaRegTrashAlt } from "react-icons/fa";
-import imagemlogin from "@/assets/imagemlogin.png";
+import { GoPaperAirplane } from "react-icons/go";
 
 const socket = io("http://localhost:3333");
 
@@ -20,9 +18,11 @@ interface Conversation {
   user2Id: number;
   user1: {
     name: string;
+    profilePicture: string;
   };
   user2: {
     name: string;
+    profilePicture: string;
   };
 }
 
@@ -36,12 +36,15 @@ interface Message {
 interface User {
   id: number;
   name: string;
+  profilePicture: string;
 }
 
 interface DecodedToken {
   exp: number;
   iat: number;
   sub: number;
+  foto: string;
+  username:string
 }
 
 interface Invite {
@@ -51,14 +54,18 @@ interface Invite {
   status: string;
   receiver: {
     name: string;
+    profilePicture: string;
   };
   sender: {
     name: string;
+    profilePicture: string;
   };
 }
 
 const ChatPage = () => {
   const [userId, setUserId] = useState<number>(0);
+  const [fotoPerfil, setfotoPerfil] = useState<string>("");
+  const [nomeUser, setnomeUser] = useState<string>("");
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [selectedConversation, setSelectedConversation] = useState<
     number | null
@@ -177,6 +184,8 @@ const ChatPage = () => {
         const decodedToken = decodeToken(token);
         if (decodedToken) {
           setUserId(decodedToken.sub);
+          setfotoPerfil(decodedToken.foto);
+          setnomeUser(decodedToken.username)
         }
       } else {
         console.log("Token não encontrado nos cookies");
@@ -206,7 +215,6 @@ const ChatPage = () => {
   };
 
   useEffect(() => {
-    
     if (userId) {
       fetchConversations();
     }
@@ -332,11 +340,13 @@ const ChatPage = () => {
     }
   };
 
+  console.log(conversations);
+
   const showModalConversas = () => {
     setconversasModal(true);
     setModalAberto("conversas");
     setaddConversaModal(false);
-    fetchConversations()
+    fetchConversations();
     setconvitesModal(false);
     setPerfilModal(false);
   };
@@ -364,12 +374,15 @@ const ChatPage = () => {
                 <hr className="w-4/5 mb-2 " />
                 <div className="flex items-center justify-between w-full pr-2 pb-2">
                   <div className="flex items-center gap-5">
-                    <div className="flex p-1 border border-black rounded-[100%] ml-2">
-                      <Image
-                        src={imagechat}
-                        alt="Astronaut Cat"
-                        width={50}
-                        height={50}
+                    <div className="flex border w-[60px] h-[60px]  border-black rounded-[100%] ml-2">
+                      <img
+                        src={`http://localhost:3333/uploads/profile_pictures/${
+                          conversation.user1Id === Number(userId)
+                            ? conversation.user2.profilePicture
+                            : conversation.user1.profilePicture
+                        }`}
+                        className="rounded-[100%]  w-full h-full"
+                        alt="Profile Picture"
                       />
                     </div>
                     <p className="text-2xl">
@@ -430,12 +443,11 @@ const ChatPage = () => {
                       <hr className="w-4/5 mb-2 " />
                       <div className="flex items-center justify-between w-full pr-2 pb-2">
                         <div className="flex items-center gap-5">
-                          <div className="flex p-1 border border-black rounded-[100%] ml-2">
-                            <Image
-                              src={imagechat}
-                              alt="Astronaut Cat"
-                              width={50}
-                              height={50}
+                          <div className="flex border border-black w-[60px] h-[60px] rounded-[100%] ml-2">
+                            <img
+                              src={`http://localhost:3333/uploads/profile_pictures/${user.profilePicture}`}
+                              className="rounded-[100%]  w-full h-full"
+                              alt="Profile Picture"
                             />
                           </div>
                           <p className="text-xl">{user.name}</p>
@@ -475,11 +487,6 @@ const ChatPage = () => {
       <div className="text-white w-full pt-4 pl-6">
         <div className="mb-4 flex flex-col w-full">
           <h2 className="text-2xl font-bold mb-4">Convites</h2>
-          <div>
-            <input type="checkbox" name="Tudo" />
-            <input type="checkbox" name="Enviados" />
-            <input type="checkbox" name="Recebidos" />
-          </div>
         </div>
         <div className="flex flex-col w-[95%]">
           <div>
@@ -494,12 +501,11 @@ const ChatPage = () => {
                     <hr className="w-[85%] mb-2 " />
                     <div className="w-full flex items-center justify-between pr-2 pb-2">
                       <div className="flex items-center gap-2">
-                        <div className="flex p-1 border border-black rounded-[100%] ">
-                          <Image
-                            src={imagechat}
-                            alt="Astronaut Cat"
-                            width={40}
-                            height={40}
+                        <div className="flex w-[60px] h-[60px] border border-black rounded-[100%] ">
+                          <img
+                            src={`http://localhost:3333/uploads/profile_pictures/${invite.receiver.profilePicture}`}
+                            className="rounded-[100%]  w-full h-full"
+                            alt="Profile Picture"
                           />
                         </div>
                         <p className="font-bold text-[#122f42]">
@@ -529,12 +535,11 @@ const ChatPage = () => {
                     <hr className="w-[85%] mb-2 " />
                     <div className="w-full flex items-center justify-between pr-2 pb-2">
                       <div className="flex items-center gap-2">
-                        <div className="flex p-1 border border-black rounded-[100%] ">
-                          <Image
-                            src={imagechat}
-                            alt="Astronaut Cat"
-                            width={40}
-                            height={40}
+                        <div className="flex w-[60px] h-[60px] border border-black rounded-[100%] ">
+                          <img
+                            src={`http://localhost:3333/uploads/profile_pictures/${invite.sender.profilePicture}`}
+                            className="rounded-[100%]  w-full h-full"
+                            alt="Profile Picture"
                           />
                         </div>
                         <p className="font-bold text-[#122f42]">
@@ -589,7 +594,23 @@ const ChatPage = () => {
   };
 
   const perfil = () => {
-    return <div>perfil</div>;
+    return (
+      <div className="text-white w-full pt-4 pl-6">
+        <div className="mb-4 flex flex-col w-full">
+          <h2 className="text-2xl font-bold mb-4">Perfil</h2>
+        </div>
+        <div className="flex flex-col w-full items-center justify-center mt-7">
+          <div className="w-[200px] h-[200px]">
+            <img
+              src={`http://localhost:3333/uploads/profile_pictures/${fotoPerfil}`}
+              className="rounded-[100%]  w-full h-full"
+              alt="Profile Picture"
+            />
+          </div>
+          <p className="text-3xl mt-6">{nomeUser}</p>
+        </div>
+      </div>
+    );
   };
 
   return (
@@ -631,12 +652,16 @@ const ChatPage = () => {
             </div>
             <div className="mb-5">
               <div
-                className={`mt-5  p-2 rounded-[100%] flex ${
+                className={`mt-5  p-1 rounded-[100%] flex ${
                   modalAberto === "perfil" ? "bg-white/50" : "bg-transparent"
                 } `}
               >
-                <button onClick={showModalPerfil}>
-                  <FaRegCircleUser className="text-3xl " />
+                <button className="w-[50px] h-[50px]" onClick={showModalPerfil}>
+                  <img
+                    src={`http://localhost:3333/uploads/profile_pictures/${fotoPerfil}`}
+                    className="rounded-[100%]  w-full h-full"
+                    alt="Profile Picture"
+                  />
                 </button>
               </div>
             </div>
@@ -651,8 +676,8 @@ const ChatPage = () => {
 
         <div className="w-3/4 h-screen flex flex-col bg-[#8ab3cf] p-4 shadow-lg">
           {selectedConversation ? (
-            <>
-              <div className="h-full overflow-y-auto p-4 mb-4 rounded-md border">
+            <div className=" flex flex-col h-full">
+              <div className="overflow-y-auto h-[90%] p-4 mb-4 rounded-md border border-black">
                 <ul className="space-y-2 flex flex-col">
                   {messages.map((message) => (
                     <li
@@ -672,22 +697,22 @@ const ChatPage = () => {
                   <div ref={messagesEndRef} />{" "}
                 </ul>
               </div>
-              <div className="flex">
+              <div className="flex h-[10%] w-full">
                 <input
                   type="text"
                   placeholder="Digite sua mensagem..."
                   value={newMessage}
                   onChange={(e) => setNewMessage(e.target.value)}
-                  className="w-full p-2 border rounded-l-md"
+                  className="w-full p-2 border rounded-l-md outline-none "
                 />
                 <button
                   onClick={handleSendMessage}
-                  className="bg-blue-500 text-white p-2 rounded-r-md"
+                  className="bg-blue-500 text-white p-2 rounded-r-md w-[60px] flex items-center justify-center "
                 >
-                  Enviar
+                  <GoPaperAirplane className="text-3xl" />
                 </button>
               </div>
-            </>
+            </div>
           ) : (
             <div>Clique em uma conversa para abir</div>
           )}
