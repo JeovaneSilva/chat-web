@@ -44,7 +44,7 @@ interface DecodedToken {
   iat: number;
   sub: number;
   foto: string;
-  username:string
+  username: string;
 }
 
 interface Invite {
@@ -185,7 +185,7 @@ const ChatPage = () => {
         if (decodedToken) {
           setUserId(decodedToken.sub);
           setfotoPerfil(decodedToken.foto);
-          setnomeUser(decodedToken.username)
+          setnomeUser(decodedToken.username);
         }
       } else {
         console.log("Token não encontrado nos cookies");
@@ -368,11 +368,11 @@ const ChatPage = () => {
             {conversations.map((conversation) => (
               <div
                 key={conversation.id}
-                className="hover:bg-gray-200 cursor-pointer font-bold text-[#122f42] flex items-end flex-col w-[95%]"
+                className="hover:bg-gray-200 cursor-pointer font-bold text-[#122f42] flex w-[95%]"
                 onClick={() => selectConversation(conversation.id)}
               >
-                <hr className="w-4/5 mb-2 " />
-                <div className="flex items-center justify-between w-full pr-2 pb-2">
+             
+                <div className="flex items-center justify-between w-full p-2">
                   <div className="flex items-center gap-5">
                     <div className="flex border w-[60px] h-[60px]  border-black rounded-[100%] ml-2">
                       <img
@@ -417,7 +417,7 @@ const ChatPage = () => {
 
   const addConversas = () => {
     return (
-      <div className="text-white w-full pt-4 pl-6">
+      <div className="text-white w-full pt-4 pl-3 lg:pl-6">
         <div className="mb-4 flex flex-col w-full">
           <h2 className="text-2xl font-bold mb-4">Pesquisa</h2>
           <input
@@ -438,26 +438,25 @@ const ChatPage = () => {
                   .map((user) => (
                     <div
                       key={user.id}
-                      className="hover:bg-gray-200 font-bold text-[#122f42] flex items-end flex-col "
+                      className="hover:bg-gray-200 font-bold text-[#122f42] flex  "
                     >
-                      <hr className="w-4/5 mb-2 " />
-                      <div className="flex items-center justify-between w-full pr-2 pb-2">
-                        <div className="flex items-center gap-5">
-                          <div className="flex border border-black w-[60px] h-[60px] rounded-[100%] ml-2">
+                      <div className="flex items-center justify-between w-full p-2">
+                        <div className="flex items-center gap-3 lg:gap-5">
+                          <div className="flex border border-black w-[40px] h-[40px] lg:w-[60px] lg:h-[60px] rounded-[100%] ml-2">
                             <img
                               src={`http://localhost:3333/uploads/profile_pictures/${user.profilePicture}`}
                               className="rounded-[100%]  w-full h-full"
                               alt="Profile Picture"
                             />
                           </div>
-                          <p className="text-xl">{user.name}</p>
+                          <p className="text-sm lg:text-xl">{user.name}</p>
                         </div>
                         {!sentInvites.some(
                           (invite) => invite.receiverId === user.id
                         ) && (
                           <button
                             onClick={() => enviarConvite(user.id)}
-                            className="bg-[#7E57C2] text-white font-bold rounded-[10px] text-sm p-2"
+                            className="bg-[#7E57C2] text-white font-bold rounded-[10px] text-xs lg:text-sm p-2"
                           >
                             convidar
                           </button>
@@ -496,12 +495,11 @@ const ChatPage = () => {
                 sentInvites.map((invite) => (
                   <div
                     key={invite.id}
-                    className="flex flex-col w-full items-end"
+                    className="flex flex-col w-full"
                   >
-                    <hr className="w-[85%] mb-2 " />
-                    <div className="w-full flex items-center justify-between pr-2 pb-2">
+                    <div className="w-full flex flex-col items-start justify-between pr-2 pb-2 md:items-center md:flex-row">
                       <div className="flex items-center gap-2">
-                        <div className="flex w-[60px] h-[60px] border border-black rounded-[100%] ">
+                        <div className="flex w-[50px] h-[50px] border border-black rounded-[100%] ">
                           <img
                             src={`http://localhost:3333/uploads/profile_pictures/${invite.receiver.profilePicture}`}
                             className="rounded-[100%]  w-full h-full"
@@ -512,7 +510,7 @@ const ChatPage = () => {
                           {invite.receiver.name}
                         </p>
                       </div>
-                      <p className="bg-gray-200 text-sm px-2 py-1 text-black rounded-[10px]">
+                      <p className="bg-gray-200 text-xs p-1 mt-2 text-black rounded-[10px] md:mt-0">
                         {invite.status}
                       </p>
                     </div>
@@ -530,12 +528,12 @@ const ChatPage = () => {
                 receivedInvites.map((invite) => (
                   <div
                     key={invite.id}
-                    className="flex flex-col w-full items-end"
+                    className="flex flex-col w-full"
                   >
-                    <hr className="w-[85%] mb-2 " />
-                    <div className="w-full flex items-center justify-between pr-2 pb-2">
-                      <div className="flex items-center gap-2">
-                        <div className="flex w-[60px] h-[60px] border border-black rounded-[100%] ">
+                    
+                    <div className="w-full flex flex-col items-start justify-between pr-2 pb-2 lg:flex-row lg:items-center">
+                      <div className="flex items-center gap-2 ">
+                        <div className="flex w-[50px] h-[50px] border border-black rounded-[100%] ">
                           <img
                             src={`http://localhost:3333/uploads/profile_pictures/${invite.sender.profilePicture}`}
                             className="rounded-[100%]  w-full h-full"
@@ -546,27 +544,29 @@ const ChatPage = () => {
                           {invite.sender.name}
                         </p>
                       </div>
-                      <p className="bg-gray-200 text-sm px-2 py-1 text-black rounded-[10px]">
-                        {invite.status}
-                      </p>
-                      {invite.status == "PENDING" && (
-                        <div className=" flex gap-2">
-                          <button
-                            onClick={() =>
-                              aceitarConvite(invite.id, invite.senderId)
-                            }
-                            className="bg-[#2da555] text-white font-bold w-[30px] h-[30px] flex items-center justify-center rounded-[10px] text-sm p-2"
-                          >
-                            <FaCheck className="text-xl" />
-                          </button>
-                          <button
-                            onClick={() => recusarConvite()}
-                            className="bg-[#df3c3c] text-white font-bold w-[30px] h-[30px] flex items-center justify-center rounded-[10px] text-sm p-2"
-                          >
-                            <FaRegTrashAlt className="text-xl" />
-                          </button>
-                        </div>
-                      )}
+                      <div className="flex gap-2 items-center justify-center sm:mt-2 lg:mt-0">
+                        <p className="bg-gray-200 text-xs p-1 text-black rounded-[10px]">
+                          {invite.status}
+                        </p>
+                        {invite.status == "PENDING" && (
+                          <div className=" flex gap-2">
+                            <button
+                              onClick={() =>
+                                aceitarConvite(invite.id, invite.senderId)
+                              }
+                              className="bg-[#2da555] text-white font-bold w-[30px] h-[30px] flex items-center justify-center rounded-[10px] text-sm p-2"
+                            >
+                              <FaCheck className="text-xl" />
+                            </button>
+                            <button
+                              onClick={() => recusarConvite()}
+                              className="bg-[#df3c3c] text-white font-bold w-[30px] h-[30px] flex items-center justify-center rounded-[10px] text-sm p-2"
+                            >
+                              <FaRegTrashAlt className="text-xl" />
+                            </button>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
                 ))
@@ -600,7 +600,7 @@ const ChatPage = () => {
           <h2 className="text-2xl font-bold mb-4">Perfil</h2>
         </div>
         <div className="flex flex-col w-full items-center justify-center mt-7">
-          <div className="w-[200px] h-[200px]">
+          <div className="w-[100px] h-[100px] lg:w-[200px] lg:h-[200px]">
             <img
               src={`http://localhost:3333/uploads/profile_pictures/${fotoPerfil}`}
               className="rounded-[100%]  w-full h-full"
@@ -613,14 +613,18 @@ const ChatPage = () => {
     );
   };
 
+  const fecharConversa = () => {
+    setSelectedConversation(null)
+  }
+
   return (
     <main className="w-screen h-screen relative">
       <div className="flex w-screen h-screen">
-        <div className="w-2/5 bg-[#4180ab] flex ">
-          <div className="w-[80px] bg-[#8ab3cf] flex flex-col items-center justify-between">
-            <div>
+        <div className="w-screen h-full fixed bg-[#4180ab] flex sm:static sm:w-2/5 sm:h-auto">
+          <div className="fixed flex items-center justify-center bottom-0 w-screen gap-5 h-[70px] bg-[#8ab3cf]  sm:static sm:h-auto sm:bottom-auto sm:w-[80px] sm:flex-col sm:items-center sm:justify-between sm:gap-0">
+            <div className="flex sm:block gap-5 sm:gap-0">
               <div
-                className={`mt-5  p-2 rounded-[100%] flex ${
+                className={`mt-0 sm:mt-5  p-2 rounded-[100%] flex ${
                   modalAberto === "conversas" ? "bg-white/50" : "bg-transparent"
                 } `}
               >
@@ -629,7 +633,7 @@ const ChatPage = () => {
                 </button>
               </div>
               <div
-                className={`mt-5  p-2 rounded-[100%] flex ${
+                className={`mt-0 sm:mt-5  p-2 rounded-[100%] flex ${
                   modalAberto === "addconversa"
                     ? "bg-white/50"
                     : "bg-transparent"
@@ -641,7 +645,7 @@ const ChatPage = () => {
               </div>
 
               <div
-                className={`mt-5  p-2 rounded-[100%] flex ${
+                className={`mt-0 sm:mt-5  p-2 rounded-[100%] flex ${
                   modalAberto === "convites" ? "bg-white/50" : "bg-transparent"
                 } `}
               >
@@ -650,13 +654,13 @@ const ChatPage = () => {
                 </button>
               </div>
             </div>
-            <div className="mb-5">
+            <div className="mb-0 sm:mb-5 ">
               <div
-                className={`mt-5  p-1 rounded-[100%] flex ${
+                className={`mt-0 sm:mt-5  p-1 rounded-[100%] flex ${
                   modalAberto === "perfil" ? "bg-white/50" : "bg-transparent"
                 } `}
               >
-                <button className="w-[50px] h-[50px]" onClick={showModalPerfil}>
+                <button className="w-[40px] h-[40px] sm:w-[50px] sm:h-[50px]" onClick={showModalPerfil}>
                   <img
                     src={`http://localhost:3333/uploads/profile_pictures/${fotoPerfil}`}
                     className="rounded-[100%]  w-full h-full"
@@ -674,10 +678,11 @@ const ChatPage = () => {
           </div>
         </div>
 
-        <div className="w-3/4 h-screen flex flex-col bg-[#8ab3cf] p-4 shadow-lg">
+        <div className="w-3/4 h-screen flex flex-col shadow-lg">
           {selectedConversation ? (
-            <div className=" flex flex-col h-full">
-              <div className="overflow-y-auto h-[90%] p-4 mb-4 rounded-md border border-black">
+            <div className="fixed w-screen flex flex-col h-full bg-[#8ab3cf] sm:static sm:w-auto">
+              <div className="overflow-y-auto h-[90%] p-4 mb-4 border border-black">
+                <button onClick={() => fecharConversa()}>fechar</button>
                 <ul className="space-y-2 flex flex-col">
                   {messages.map((message) => (
                     <li
@@ -714,7 +719,7 @@ const ChatPage = () => {
               </div>
             </div>
           ) : (
-            <div>Clique em uma conversa para abir</div>
+            <div className="bg-[#8ab3cf] h-full">Clique em uma conversa para abir</div>
           )}
         </div>
       </div>
