@@ -6,7 +6,7 @@ import { jwtDecode } from "jwt-decode";
 import io from "socket.io-client";
 import { BiMessageAdd, BiMessageDetail } from "react-icons/bi";
 import { MdOutlineMailOutline } from "react-icons/md";
-import { FaRegCircleUser } from "react-icons/fa6";
+import { FaArrowLeft } from "react-icons/fa6";
 import { FaCheck, FaRegTrashAlt } from "react-icons/fa";
 import { GoPaperAirplane } from "react-icons/go";
 
@@ -83,6 +83,7 @@ const ChatPage = () => {
   const [convitesModal, setconvitesModal] = useState(false);
   const [perfilModal, setPerfilModal] = useState(false);
   const [modalAberto, setModalAberto] = useState("conversas");
+  const [conversaAberta, setConversaAberta] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
@@ -100,9 +101,7 @@ const ChatPage = () => {
       );
       const data = await response.json();
       setSentInvites(data.sentInvites);
-      console.log(data.sentInvites);
       setReceivedInvites(data.receivedInvites);
-      console.log(data.receivedInvites);
     } catch (error) {
       console.error("Erro ao buscar convites:", error);
     }
@@ -240,6 +239,7 @@ const ChatPage = () => {
 
   const selectConversation = async (conversationId: number) => {
     setSelectedConversation(conversationId);
+    setConversaAberta(true)
     const token = getCookie("token");
     try {
       const response = await fetch(
@@ -254,6 +254,7 @@ const ChatPage = () => {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
       const data = await response.json();
+      console.log(data);
       setMessages(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error("Erro ao buscar mensagens:", error);
@@ -340,8 +341,6 @@ const ChatPage = () => {
     }
   };
 
-  console.log(conversations);
-
   const showModalConversas = () => {
     setconversasModal(true);
     setModalAberto("conversas");
@@ -353,44 +352,47 @@ const ChatPage = () => {
 
   const modalConversas = () => {
     return (
-      <div className="text-white w-full pt-4 pl-6 items-center">
-        <div className="mb-4 flex flex-col w-full">
+      <div className="text-white w-full pt-4  items-center">
+        <div className="mb-4 flex flex-col pl-6 w-full">
           <h2 className="text-2xl font-bold mb-4">Conversas</h2>
           <input
             type="search"
             placeholder="Buscar suas conversas"
-            className="w-[95%] h-6 text-black p-4 border border-black rounded-[10px] outline-none"
+            className="w-[70%] sm:w-[95%] h-6 text-black p-4 border border-black rounded-[10px] outline-none"
           />
         </div>
-
+  
         {conversations.length > 0 ? (
           <div className="mt-10">
             {conversations.map((conversation) => (
               <div
                 key={conversation.id}
-                className="hover:bg-gray-200 cursor-pointer font-bold text-[#122f42] flex w-[95%]"
+                // Adiciona a classe de fundo escuro se a conversa estiver selecionada
+                className={`${
+                  selectedConversation === conversation.id
+                    ? "bg-gray-400"
+                    : "hover:bg-gray-200"
+                } cursor-pointer font-bold p-1 text-[#122f42] flex w-[100%]`}
                 onClick={() => selectConversation(conversation.id)}
               >
-             
-                <div className="flex items-center justify-between w-full p-2">
+                <div className="flex items-center justify-between w-full p-1 sssm:p-2">
                   <div className="flex items-center gap-5">
-                    <div className="flex border w-[60px] h-[60px]  border-black rounded-[100%] ml-2">
+                    <div className="flex border w-[60px] h-[60px] ml-0 border-black rounded-[100%] sm:ml-2">
                       <img
                         src={`http://localhost:3333/uploads/profile_pictures/${
                           conversation.user1Id === Number(userId)
                             ? conversation.user2.profilePicture
                             : conversation.user1.profilePicture
                         }`}
-                        className="rounded-[100%]  w-full h-full"
+                        className="rounded-[100%] w-full h-full"
                         alt="Profile Picture"
                       />
                     </div>
                     <p className="text-2xl">
-                      {" "}
                       {`${
                         conversation.user1Id === Number(userId)
-                          ? `${conversation.user2.name} `
-                          : ` ${conversation.user1.name}`
+                          ? conversation.user2.name
+                          : conversation.user1.name
                       }`}
                     </p>
                   </div>
@@ -399,11 +401,12 @@ const ChatPage = () => {
             ))}
           </div>
         ) : (
-          <div>Você não possui conversas</div>
+          <div className="ml-6 mt-4">Você não possui conversas</div>
         )}
       </div>
     );
   };
+  
   // className="cursor-pointer hover:bg-gray-200 p-2 rounded text-2xl"
 
   const showModalAddConversa = () => {
@@ -423,7 +426,7 @@ const ChatPage = () => {
           <input
             type="search"
             placeholder="Buscar usuários"
-            className="w-[95%] h-6 p-4 text-black border border-black rounded-[10px] outline-none"
+            className="w-[70%] sm:w-[95%] h-6 p-4 text-black border border-black rounded-[10px] outline-none"
             value={searchQuery}
             onChange={(e) => handleSearch(e.target.value)}
           />
@@ -438,7 +441,7 @@ const ChatPage = () => {
                   .map((user) => (
                     <div
                       key={user.id}
-                      className="hover:bg-gray-200 font-bold text-[#122f42] flex  "
+                      className="hover:bg-gray-200 rounded-md font-bold text-[#122f42] flex  "
                     >
                       <div className="flex items-center justify-between w-full p-2">
                         <div className="flex items-center gap-3 lg:gap-5">
@@ -493,11 +496,8 @@ const ChatPage = () => {
             <div className="mt-5">
               {sentInvites.length > 0 ? (
                 sentInvites.map((invite) => (
-                  <div
-                    key={invite.id}
-                    className="flex flex-col w-full"
-                  >
-                    <div className="w-full flex flex-col items-start justify-between pr-2 pb-2 md:items-center md:flex-row">
+                  <div key={invite.id} className="flex flex-col w-full">
+                    <div className="w-full flex items-center sm:flex-col sm:items-start justify-between pr-2 pb-2 md:items-center md:flex-row">
                       <div className="flex items-center gap-2">
                         <div className="flex w-[50px] h-[50px] border border-black rounded-[100%] ">
                           <img
@@ -517,21 +517,19 @@ const ChatPage = () => {
                   </div>
                 ))
               ) : (
-                <p className="text-black">Você não enviou nenhum convite.</p>
+                <p className="text-xs text-black sm:text-base">
+                  Você não enviou nenhum convite.
+                </p>
               )}
             </div>
           </div>
           <div>
-            <h2 className="text-xl font-bold mt-6">Recebidos</h2>
+            <h2 className="text-sm font-bold mt-6">Recebidos</h2>
             <div className="mt-5">
               {receivedInvites.length > 0 ? (
                 receivedInvites.map((invite) => (
-                  <div
-                    key={invite.id}
-                    className="flex flex-col w-full"
-                  >
-                    
-                    <div className="w-full flex flex-col items-start justify-between pr-2 pb-2 lg:flex-row lg:items-center">
+                  <div key={invite.id} className="flex flex-col w-full">
+                    <div className="w-full flex items-center sm:flex-col sm:items-start justify-between pr-2 pb-2 lg:flex-row lg:items-center">
                       <div className="flex items-center gap-2 ">
                         <div className="flex w-[50px] h-[50px] border border-black rounded-[100%] ">
                           <img
@@ -571,7 +569,9 @@ const ChatPage = () => {
                   </div>
                 ))
               ) : (
-                <p>Você não recebeu nenhum convite.</p>
+                <p className="text-sm text-black sm:text-base">
+                  Você não recebeu nenhum convite.
+                </p>
               )}
             </div>
           </div>
@@ -614,8 +614,8 @@ const ChatPage = () => {
   };
 
   const fecharConversa = () => {
-    setSelectedConversation(null)
-  }
+    setSelectedConversation(null);
+  };
 
   return (
     <main className="w-screen h-screen relative">
@@ -660,7 +660,10 @@ const ChatPage = () => {
                   modalAberto === "perfil" ? "bg-white/50" : "bg-transparent"
                 } `}
               >
-                <button className="w-[40px] h-[40px] sm:w-[50px] sm:h-[50px]" onClick={showModalPerfil}>
+                <button
+                  className="w-[40px] h-[40px] sm:w-[50px] sm:h-[50px]"
+                  onClick={showModalPerfil}
+                >
                   <img
                     src={`http://localhost:3333/uploads/profile_pictures/${fotoPerfil}`}
                     className="rounded-[100%]  w-full h-full"
@@ -680,27 +683,61 @@ const ChatPage = () => {
 
         <div className="w-3/4 h-screen flex flex-col shadow-lg">
           {selectedConversation ? (
-            <div className="fixed w-screen flex flex-col h-full bg-[#8ab3cf] sm:static sm:w-auto">
-              <div className="overflow-y-auto h-[90%] p-4 mb-4 border border-black">
-                <button onClick={() => fecharConversa()}>fechar</button>
-                <ul className="space-y-2 flex flex-col">
-                  {messages.map((message) => (
-                    <li
-                      key={message.id}
-                      className={`p-2 flex flex-col rounded-md w-[200px] ${
-                        message.senderId === Number(userId)
-                          ? "bg-blue-100 text-blue-800 items-end self-end"
-                          : "bg-gray-200 text-gray-800 items-start self-start"
-                      }`}
+            <div className="fixed w-screen flex flex-col h-full border-l border-black bg-[#8ab3cf] sm:static sm:w-auto">
+              <div className="overflow-y-auto h-[90%] border-b border-black">
+                <div className="fixed flex top-0 bg-[#4180ab] w-full h-[60px] items-center justify-start pl-2">
+                  <button
+                    className="block sm:hidden"
+                    onClick={() => fecharConversa()}
+                  >
+                    <FaArrowLeft className="text-xl" />
+                  </button>
+                  {conversations.filter((conversa) => conversa.id == selectedConversation).map((conversation) => (
+                    <div
+                      className="cursor-pointer font-bold text-[#122f42] flex"
                     >
-                      <span className="block font-semibold">
-                        {`Usuário ${message.senderId} diz:`}
-                      </span>
-                      <p>{message.content}</p>
-                    </li>
+                        <div className="ml-2 flex items-center gap-4">
+                            <img
+                              src={`http://localhost:3333/uploads/profile_pictures/${
+                                conversation.user1Id === Number(userId)
+                                  ? conversation.user2.profilePicture
+                                  : conversation.user1.profilePicture
+                              }`}
+                              className="rounded-[100%]  w-[40px] h-[40px]"
+                              alt="Profile Picture"
+                            />
+                          <p className="text-xl">
+                            {" "}
+                            {`${
+                              conversation.user1Id === Number(userId)
+                                ? `${conversation.user2.name} `
+                                : ` ${conversation.user1.name}`
+                            }`}
+                          </p>
+                      </div>
+                    </div>
                   ))}
-                  <div ref={messagesEndRef} />{" "}
-                </ul>
+                </div>
+                <div className="p-4">
+                  <ul className="mt-20 space-y-2 flex flex-col">
+                    {messages.map((message) => (
+                      <li
+                        key={message.id}
+                        className={`p-2 flex flex-col rounded-md w-[200px] ${
+                          message.senderId === Number(userId)
+                            ? "bg-blue-100 text-blue-800 items-end self-end"
+                            : "bg-gray-200 text-gray-800 items-start self-start"
+                        }`}
+                      >
+                        <span className="block font-semibold">
+                          {`Usuário ${message.senderId} diz:`}
+                        </span>
+                        <p>{message.content}</p>
+                      </li>
+                    ))}
+                    <div ref={messagesEndRef} />{" "}
+                  </ul>
+                </div>
               </div>
               <div className="flex h-[10%] w-full">
                 <input
@@ -719,7 +756,9 @@ const ChatPage = () => {
               </div>
             </div>
           ) : (
-            <div className="bg-[#8ab3cf] h-full">Clique em uma conversa para abir</div>
+            <div className="bg-[#8ab3cf] h-full">
+              Clique em uma conversa para abir
+            </div>
           )}
         </div>
       </div>
