@@ -9,58 +9,13 @@ import { MdOutlineMailOutline } from "react-icons/md";
 import { FaArrowLeft } from "react-icons/fa6";
 import { FaCheck, FaRegTrashAlt } from "react-icons/fa";
 import { GoPaperAirplane } from "react-icons/go";
+import { Conversation,Message } from "@/types/Chat";
+import { User,DecodedToken } from "@/types/User";
+import { Invite } from "@/types/Invites";
+import Modal from "@/components/Modal";
 
 const socket = io("http://localhost:3333");
 
-interface Conversation {
-  id: number;
-  user1Id: number;
-  user2Id: number;
-  user1: {
-    name: string;
-    profilePicture: string;
-  };
-  user2: {
-    name: string;
-    profilePicture: string;
-  };
-}
-
-interface Message {
-  id: number;
-  content: string;
-  senderId: number;
-  conversationId: number;
-}
-
-interface User {
-  id: number;
-  name: string;
-  profilePicture: string;
-}
-
-interface DecodedToken {
-  exp: number;
-  iat: number;
-  sub: number;
-  foto: string;
-  username: string;
-}
-
-interface Invite {
-  id: number;
-  receiverId: number;
-  senderId: number;
-  status: string;
-  receiver: {
-    name: string;
-    profilePicture: string;
-  };
-  sender: {
-    name: string;
-    profilePicture: string;
-  };
-}
 
 const ChatPage = () => {
   const [userId, setUserId] = useState<number>(0);
@@ -83,7 +38,7 @@ const ChatPage = () => {
   const [convitesModal, setconvitesModal] = useState(false);
   const [perfilModal, setPerfilModal] = useState(false);
   const [modalAberto, setModalAberto] = useState("conversas");
-  const [conversaAberta, setConversaAberta] = useState(false);
+  const [modalConvite, setmodalConvite] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
@@ -121,7 +76,7 @@ const ChatPage = () => {
         credentials: "include",
       });
       if (response.ok) {
-        alert("Convite enviado com sucesso!");
+        setmodalConvite(true)
         fetchInvites(); // Atualiza a lista de convites
       } else {
         console.error("Erro ao enviar convite");
@@ -239,7 +194,6 @@ const ChatPage = () => {
 
   const selectConversation = async (conversationId: number) => {
     setSelectedConversation(conversationId);
-    setConversaAberta(true)
     const token = getCookie("token");
     try {
       const response = await fetch(
@@ -370,9 +324,9 @@ const ChatPage = () => {
                 // Adiciona a classe de fundo escuro se a conversa estiver selecionada
                 className={`${
                   selectedConversation === conversation.id
-                    ? "bg-gray-400"
+                    ? "bg-[#306080]"
                     : "hover:bg-gray-200"
-                } cursor-pointer font-bold p-1 text-[#122f42] flex w-[100%]`}
+                } cursor-pointer font-bold p-1 text-[#133347] flex w-[100%]`}
                 onClick={() => selectConversation(conversation.id)}
               >
                 <div className="flex items-center justify-between w-full p-1 sssm:p-2">
@@ -465,6 +419,11 @@ const ChatPage = () => {
                           </button>
                         )}
                       </div>
+                      {modalConvite == true && (
+                        <Modal>
+                          <p>teste</p>
+                        </Modal>
+                      )}
                     </div>
                   ))}
               </div>
@@ -757,7 +716,7 @@ const ChatPage = () => {
             </div>
           ) : (
             <div className="bg-[#8ab3cf] h-full">
-              Clique em uma conversa para abir
+              Clique em uma conversa para abrir
             </div>
           )}
         </div>
