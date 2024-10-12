@@ -60,10 +60,12 @@ const useChat = () => {
   };
 
   // Enviar um convite
-  const enviarConvite = async (recepId: number) => {
+  const convidar = async (recepId: number) => {
+    console.log(recepId)
     try {
-      const data = await EnviarConvite(recepId, userId);
-      if (data.ok) {
+      const res = await EnviarConvite(recepId, userId);
+      if (res.ok) {
+        alert("convite enviado com sucesso")
         setmodalConvite(true);
         fetchInvites(); // Atualiza a lista de convites
       } else {
@@ -77,11 +79,11 @@ const useChat = () => {
   // Aceitar um convite
   const aceitarConvite = async (invitationId: number, senderId: number) => {
     try {
-      const data = await AcceptConvite(invitationId);
+      const res = await AcceptConvite(invitationId);
 
       CriarConversa(senderId);
 
-      if (data.ok) {
+      if (res.ok) {
         alert("Convite aceito com sucesso!");
         fetchInvites(); // Atualiza a lista de convites
       } else {
@@ -280,7 +282,7 @@ const useChat = () => {
     showModal,
     filteredUsers,
     sentInvites,
-    enviarConvite,
+    convidar,
     modalConvite,
     receivedInvites,
     aceitarConvite,

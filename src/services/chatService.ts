@@ -27,11 +27,11 @@ export const EnviarConvite = async (userId:number,recepId:number) => {
           "Content-Type": "application/json",
           authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ senderId: userId, receiverId: recepId }),
+        body: JSON.stringify({ senderId: recepId, receiverId: userId }),
         credentials: "include",
       });
 
-      return response.json()
+      return response
 }
 
 export const AcceptConvite = async (invitationId:number) => {
@@ -44,7 +44,7 @@ export const AcceptConvite = async (invitationId:number) => {
         }
       );
 
-      return response.json()
+      return response
 }
 
 export const BuscarConversa = async (userId:number) => {

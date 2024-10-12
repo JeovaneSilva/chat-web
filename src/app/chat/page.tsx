@@ -21,7 +21,7 @@ const ChatPage = () => {
     showModal,
     filteredUsers,
     sentInvites,
-    enviarConvite,
+    convidar,
     modalConvite,
     receivedInvites,
     aceitarConvite,
@@ -138,16 +138,18 @@ const ChatPage = () => {
                           </div>
                           <p className="text-sm lg:text-xl">{user.name}</p>
                         </div>
-                        {!sentInvites.some(
-                          (invite) => invite.receiverId === user.id
-                        ) && (
-                          <button
-                            onClick={() => enviarConvite(user.id)}
-                            className="bg-[#7E57C2] text-white font-bold rounded-[10px] text-xs lg:text-sm p-2"
-                          >
-                            convidar
-                          </button>
-                        )}
+                        <div>
+                          {!sentInvites.some(
+                            (invite) => invite.receiverId == user.id
+                          ) && (
+                            <button
+                              onClick={() => convidar(user.id)}
+                              className="bg-[#7E57C2] text-white font-bold rounded-[10px] text-xs lg:text-sm p-2"
+                            >
+                              convidar
+                            </button>
+                          )}
+                        </div>
                       </div>
                     </div>
                   ))}
