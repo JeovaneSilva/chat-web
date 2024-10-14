@@ -6,9 +6,12 @@ import { BiMessageAdd, BiMessageDetail } from "react-icons/bi";
 import { MdOutlineMailOutline } from "react-icons/md";
 import { FaArrowLeft, FaCheck } from "react-icons/fa6";
 import { GoPaperAirplane } from "react-icons/go";
+import { FaEnvelopeOpenText } from "react-icons/fa6";
 
 import useChat from "@/hooks/useChat";
 import { FaRegTrashAlt } from "react-icons/fa";
+import Modal from "@/components/modal/Modal";
+import LoadingSpinner from "../Loading";
 
 const ChatPage = () => {
   const {
@@ -22,7 +25,6 @@ const ChatPage = () => {
     filteredUsers,
     sentInvites,
     convidar,
-    modalConvite,
     receivedInvites,
     aceitarConvite,
     recusarConvite,
@@ -43,6 +45,12 @@ const ChatPage = () => {
     newMessage,
     setNewMessage,
     handleSendMessage,
+    modalConvite,
+    setModalConvite,
+    loading,
+    setModalAcceptAndRemove,
+    modalAcceptAndRemove,
+    logOut
   } = useChat();
 
   const modalConversas = () => {
@@ -138,7 +146,8 @@ const ChatPage = () => {
                           </div>
                           <p className="text-sm lg:text-xl">{user.name}</p>
                         </div>
-                        <div>
+                        {!receivedInvites.some((receive) => receive.receiverId == userId) && (
+                          <div>
                           {!sentInvites.some(
                             (invite) => invite.receiverId == user.id
                           ) && (
@@ -150,6 +159,8 @@ const ChatPage = () => {
                             </button>
                           )}
                         </div>
+                        )}
+                        
                       </div>
                     </div>
                   ))}
@@ -219,26 +230,51 @@ const ChatPage = () => {
                           {invite.sender.name}
                         </p>
                       </div>
-                      <div className="flex gap-2 items-center justify-center sm:mt-2 lg:mt-0">
+                      <div className="flex gap-5 items-center justify-center sm:mt-2 lg:mt-0">
                         <p className="bg-gray-200 text-xs p-1 text-black rounded-[10px]">
                           {invite.status}
                         </p>
                         {invite.status == "PENDING" && (
-                          <div className=" flex gap-2">
+                          <div className=" flex ">
                             <button
-                              onClick={() =>
-                                aceitarConvite(invite.id, invite.senderId)
-                              }
-                              className="bg-[#2da555] text-white font-bold w-[30px] h-[30px] flex items-center justify-center rounded-[10px] text-sm p-2"
+                              onClick={() => setModalAcceptAndRemove(true)}
                             >
-                              <FaCheck className="text-xl" />
+                              <FaEnvelopeOpenText className="text-2xl text-white" />
                             </button>
-                            <button
-                              onClick={() => recusarConvite()}
-                              className="bg-[#df3c3c] text-white font-bold w-[30px] h-[30px] flex items-center justify-center rounded-[10px] text-sm p-2"
-                            >
-                              <FaRegTrashAlt className="text-xl" />
-                            </button>
+                            {modalAcceptAndRemove && (
+                              <Modal>
+                                <p className="max-w-[250px] text-center text-lg sm:max-w-[100%]">
+                                  Você deseja aceitar o convite de <b>{invite.sender.name}</b>?
+                                </p>
+                                <div className="flex gap-10 mt-8">
+                                  <button
+                                    onClick={() => setModalAcceptAndRemove(false)}
+                                    className="bg-white w-[90px] h-[30px] text-black rounded-[10px] text-xl p-1 flex items-center justify-center"
+                                  >
+                                    Fechar
+                                  </button>
+                                  <div className="flex gap-4">
+                                    <button
+                                      onClick={() =>
+                                        aceitarConvite(
+                                          invite.id,
+                                          invite.senderId
+                                        )
+                                      }
+                                      className="bg-[#2da555] text-white font-bold w-[40px] h-[30px] flex items-center justify-center rounded-[10px] text-sm p-2"
+                                    >
+                                      <FaCheck className="text-xl" />
+                                    </button>
+                                    <button
+                                      onClick={() => recusarConvite()}
+                                      className="bg-[#df3c3c] text-white font-bold w-[40px] h-[30px] flex items-center justify-center rounded-[10px] text-sm p-2"
+                                    >
+                                      <FaRegTrashAlt className="text-xl" />
+                                    </button>
+                                  </div>
+                                </div>
+                              </Modal>
+                            )}
                           </div>
                         )}
                       </div>
@@ -272,6 +308,13 @@ const ChatPage = () => {
             />
           </div>
           <p className="text-3xl mt-6">{nomeUser}</p>
+          <div className="mt-7">
+            <button
+            onClick={() => logOut()}
+             className="p-1 bg-[#8ab3cf] text-black w-[80px] rounded-xl">
+                Sair
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -383,15 +426,12 @@ const ChatPage = () => {
                     {messages.map((message) => (
                       <li
                         key={message.id}
-                        className={`p-2 flex flex-col rounded-md w-[200px] ${
+                        className={`p-2 flex flex-col rounded-md w-auto min-w-[100px] ${
                           message.senderId === Number(userId)
                             ? "bg-blue-100 text-blue-800 items-end self-end"
                             : "bg-gray-200 text-gray-800 items-start self-start"
                         }`}
                       >
-                        <span className="block font-semibold">
-                          {`Usuário ${message.senderId} diz:`}
-                        </span>
                         <p>{message.content}</p>
                       </li>
                     ))}
@@ -422,6 +462,24 @@ const ChatPage = () => {
           )}
         </div>
       </div>
+
+      {/* modais */}
+
+      {loading && <LoadingSpinner />}
+
+      {modalConvite && (
+        <Modal>
+          <div className="gap-8 flex flex-col items-center">
+            <p className="text-xl text-white">Convite enviado com sucesso!</p>
+            <button
+              onClick={() => setModalConvite(false)}
+              className="bg-white w-[100px] h-[35px] text-black rounded-lg text-xl p-1"
+            >
+              Fechar
+            </button>
+          </div>
+        </Modal>
+      )}
     </main>
   );
 };

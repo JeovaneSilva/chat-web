@@ -3,16 +3,19 @@ import Image from "next/image";
 import imagelogin from "../assets/imagemlogin.png";
 import { useState } from "react";
 import { useRouter } from "next/navigation"; // Importando useRouter
+import Link from "next/link";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
-  const router = useRouter(); 
+  const router = useRouter();
 
   // Função para salvar o token JWT nos cookies
   const setCookie = (name: string, value: string, days: number) => {
     const expires = new Date(Date.now() + days * 864e5).toUTCString();
-    document.cookie = `${name}=${encodeURIComponent(value)}; expires=${expires}; path=/`;
+    document.cookie = `${name}=${encodeURIComponent(
+      value
+    )}; expires=${expires}; path=/`;
   };
 
   const loginUser = async (e: React.FormEvent) => {
@@ -45,7 +48,6 @@ const Login = () => {
       } else {
         console.error("Token de acesso não encontrado.");
       }
-      
     } catch (error) {
       console.error("Erro ao fazer login:", error);
     }
@@ -99,6 +101,12 @@ const Login = () => {
               LOGIN
             </button>
           </form>
+          <div className="flex w-full justify-between text-white mt-4">
+            <p>Ainda não possui conta? </p>
+            <span className="text-[#7E57C2] hover:text-green-600">
+              <Link href="/Cadastro">Cadastrar-se</Link>{" "}
+            </span>
+          </div>
         </section>
       </div>
     </main>

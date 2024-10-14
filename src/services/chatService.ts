@@ -70,7 +70,7 @@ export const SelecionarConversa = async (conversationId:number) => {
         }
       );
 
-      return response.json()
+      return response
 }
 
 export const CriarConverse = async (userId:number,recepId:number) => {
@@ -90,7 +90,7 @@ export const CriarConverse = async (userId:number,recepId:number) => {
         }
       );
 
-      return response.json()
+      return response
 }
 
 

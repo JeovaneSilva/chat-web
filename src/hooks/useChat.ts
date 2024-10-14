@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { Conversation, Message } from "@/types/Chat";
 import { User, DecodedToken } from "@/types/User";
 import { Invite } from "@/types/Invites";
@@ -13,10 +14,12 @@ import {
   SelecionarConversa,
 } from "@/services/chatService";
 import { BuscarUsuarios } from "@/services/userService";
+import { Router } from "next/router";
 
 const socket = io("http://localhost:3333");
 
 const useChat = () => {
+  const router = useRouter();
   const [userId, setUserId] = useState<number>(0);
   const [fotoPerfil, setfotoPerfil] = useState<string>("");
   const [nomeUser, setnomeUser] = useState<string>("");
@@ -37,8 +40,10 @@ const useChat = () => {
   const [convitesModal, setconvitesModal] = useState(false);
   const [perfilModal, setPerfilModal] = useState(false);
   const [modalAberto, setModalAberto] = useState("conversas");
-  const [modalConvite, setmodalConvite] = useState(false);
+  const [modalConvite, setModalConvite] = useState(false);
+  const [modalAcceptAndRemove, setModalAcceptAndRemove] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
 
    const getCookie = (name: string): string | null => {
     const cookie = document.cookie
@@ -61,30 +66,31 @@ const useChat = () => {
 
   // Enviar um convite
   const convidar = async (recepId: number) => {
-    console.log(recepId)
+    setLoading(true);
     try {
       const res = await EnviarConvite(recepId, userId);
       if (res.ok) {
-        alert("convite enviado com sucesso")
-        setmodalConvite(true);
         fetchInvites(); // Atualiza a lista de convites
+        setModalConvite(true)
       } else {
         console.error("Erro ao enviar convite");
       }
     } catch (error) {
       console.error("Erro ao enviar convite:", error);
     }
+    setLoading(false);
   };
 
   // Aceitar um convite
   const aceitarConvite = async (invitationId: number, senderId: number) => {
+    setLoading(true)
     try {
       const res = await AcceptConvite(invitationId);
 
       CriarConversa(senderId);
 
       if (res.ok) {
-        alert("Convite aceito com sucesso!");
+        setModalAcceptAndRemove(false)
         fetchInvites(); // Atualiza a lista de convites
       } else {
         console.error("Erro ao aceitar convite");
@@ -92,6 +98,7 @@ const useChat = () => {
     } catch (error) {
       console.error("Erro ao aceitar convite:", error);
     }
+    setLoading(false)
   };
 
   const recusarConvite = () => {};
@@ -160,10 +167,11 @@ const useChat = () => {
   const selectConversation = async (conversationId: number) => {
     setSelectedConversation(conversationId);
     try {
-      const data = await SelecionarConversa(conversationId);
-      if (!data.ok) {
-        throw new Error(`HTTP error! Status: ${data.status}`);
+      const res = await SelecionarConversa(conversationId);
+      if (!res.ok) {
+        throw new Error(`HTTP error! Status: ${res.status}`);
       }
+      const data = await res.json()
       setMessages(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error("Erro ao buscar mensagens:", error);
@@ -214,13 +222,15 @@ const useChat = () => {
     }
   };
 
+ 
   const CriarConversa = async (recepId: number) => {
     try {
-      const data = await CriarConverse(userId, recepId);
+      const res = await CriarConverse(userId, recepId);
 
-      if (!data.ok) {
-        throw new Error(`Erro HTTP! Status: ${data.status}`);
+      if (!res.ok) {
+        throw new Error(`Erro HTTP! Status: ${res.status}`);
       }
+      const data = await res.json()
       setAllUsers(data); // Certifique-se de que o que está retornando é a lista de usuários.
       alert("criada");
     } catch (error) {
@@ -272,6 +282,11 @@ const useChat = () => {
     setSelectedConversation(null);
   };
 
+
+  const logOut = () => {
+    router.push("/");
+  }
+
   return {
     conversations,
     selectedConversation,
@@ -284,6 +299,7 @@ const useChat = () => {
     sentInvites,
     convidar,
     modalConvite,
+    setModalConvite,
     receivedInvites,
     aceitarConvite,
     recusarConvite,
@@ -304,6 +320,10 @@ const useChat = () => {
     newMessage,
     setNewMessage,
     handleSendMessage,
+    loading,
+    setModalAcceptAndRemove,
+    modalAcceptAndRemove,
+    logOut
   };
 };
 

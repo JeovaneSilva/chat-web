@@ -2,6 +2,7 @@
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import AvatarEditor from "react-avatar-editor";
+import Link from "next/link";
 
 // Defina uma imagem padrão para os usuários que não enviarem uma foto
 const defaultProfilePicture = "/assets/defaultProfile.png";
@@ -99,22 +100,22 @@ const Cadastro = () => {
     } catch (error) {
       console.error("Erro ao cadastrar usuário:", error);
     } finally {
-        const res = await fetch("http://localhost:3333/auth/login", {
-          method: "POST",
-          body: JSON.stringify({
-            email: email,
-            password: senha,
-          }),
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
+      const res = await fetch("http://localhost:3333/auth/login", {
+        method: "POST",
+        body: JSON.stringify({
+          email: email,
+          password: senha,
+        }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
 
-        const data = await res.json();
-        const token = data.access_token;
+      const data = await res.json();
+      const token = data.access_token;
 
-        // Salvando o token JWT nos cookies
-        setCookie("token", token, 1); // Expira em 7 dias
+      // Salvando o token JWT nos cookies
+      setCookie("token", token, 1); // Expira em 7 dias
     }
   };
 
@@ -267,6 +268,12 @@ const Cadastro = () => {
             </button>
           </div>
         </form>
+        <div className="flex w-full justify-between text-white mt-4">
+          <p>Já possui uma conta? </p>
+          <span className="text-[#7E57C2] hover:text-green-600">
+            <Link href="/"> Faça Login</Link>
+          </span>
+        </div>
       </section>
     </main>
   );
