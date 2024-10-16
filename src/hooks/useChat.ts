@@ -3,7 +3,6 @@ import { useRouter } from "next/navigation";
 import { Conversation, Message } from "@/types/Chat";
 import { User, DecodedToken } from "@/types/User";
 import { Invite } from "@/types/Invites";
-import { jwtDecode } from "jwt-decode";
 import io from "socket.io-client";
 import {
   AcceptConvite,
@@ -14,7 +13,8 @@ import {
   SelecionarConversa,
 } from "@/services/chatService";
 import { BuscarUsuarios } from "@/services/userService";
-import { Router } from "next/router";
+import { decodeToken } from "@/utils/tokenFunction";
+import { getCookie } from "@/utils/tokenFunction";
 
 const socket = io("http://localhost:3333");
 
@@ -45,13 +45,6 @@ const useChat = () => {
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
 
-   const getCookie = (name: string): string | null => {
-    const cookie = document.cookie
-      .split("; ")
-      .find((row) => row.startsWith(`${name}=`));
-    return cookie ? decodeURIComponent(cookie.split("=")[1]) : null;
-  };
-
   const token = getCookie("token");
   // Função para buscar os convites (enviados e recebidos)
   const fetchInvites = async () => {
@@ -71,7 +64,7 @@ const useChat = () => {
       const res = await EnviarConvite(recepId, userId);
       if (res.ok) {
         fetchInvites(); // Atualiza a lista de convites
-        setModalConvite(true)
+        setModalConvite(true);
       } else {
         console.error("Erro ao enviar convite");
       }
@@ -83,14 +76,14 @@ const useChat = () => {
 
   // Aceitar um convite
   const aceitarConvite = async (invitationId: number, senderId: number) => {
-    setLoading(true)
+    setLoading(true);
     try {
       const res = await AcceptConvite(invitationId);
 
       CriarConversa(senderId);
 
       if (res.ok) {
-        setModalAcceptAndRemove(false)
+        setModalAcceptAndRemove(false);
         fetchInvites(); // Atualiza a lista de convites
       } else {
         console.error("Erro ao aceitar convite");
@@ -98,20 +91,10 @@ const useChat = () => {
     } catch (error) {
       console.error("Erro ao aceitar convite:", error);
     }
-    setLoading(false)
+    setLoading(false);
   };
 
   const recusarConvite = () => {};
-
-  const decodeToken = (token: string): DecodedToken | null => {
-    try {
-      const decoded: DecodedToken = jwtDecode(token);
-      return decoded;
-    } catch (error) {
-      console.error("Erro ao decodificar o token JWT:", error);
-      return null;
-    }
-  };
 
   useEffect(() => {
     const fetchAndDecodeToken = () => {
@@ -171,7 +154,7 @@ const useChat = () => {
       if (!res.ok) {
         throw new Error(`HTTP error! Status: ${res.status}`);
       }
-      const data = await res.json()
+      const data = await res.json();
       setMessages(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error("Erro ao buscar mensagens:", error);
@@ -194,7 +177,6 @@ const useChat = () => {
   // Função para carregar todos os usuários uma única vez
   const fetchAllUsers = async () => {
     try {
-      
       const data = await BuscarUsuarios();
       setAllUsers(data);
     } catch (error) {
@@ -222,7 +204,6 @@ const useChat = () => {
     }
   };
 
- 
   const CriarConversa = async (recepId: number) => {
     try {
       const res = await CriarConverse(userId, recepId);
@@ -230,7 +211,7 @@ const useChat = () => {
       if (!res.ok) {
         throw new Error(`Erro HTTP! Status: ${res.status}`);
       }
-      const data = await res.json()
+      const data = await res.json();
       setAllUsers(data); // Certifique-se de que o que está retornando é a lista de usuários.
       alert("criada");
     } catch (error) {
@@ -282,10 +263,26 @@ const useChat = () => {
     setSelectedConversation(null);
   };
 
-
   const logOut = () => {
     router.push("/");
-  }
+  };
+
+  const formatarData = (dataISO: string) => {
+    // Converta a string para um objeto Date
+    const data = new Date(dataISO);
+  
+    // Extraia os valores desejados
+    const hora = data.getUTCHours().toString().padStart(2, '0'); // Horas formatadas (00-23)
+    const minutos = data.getUTCMinutes().toString().padStart(2, '0'); // Minutos formatados (00-59)
+    const dia = data.getUTCDate().toString().padStart(2, '0'); // Dia do mês (01-31)
+    const mes = (data.getUTCMonth() + 1).toString().padStart(2, '0'); // Mês formatado (01-12)
+    const ano = data.getUTCFullYear(); // Ano completo
+  
+    // Retorne os valores formatados
+    return `${hora}:${minutos} - ${dia}/${mes}`
+  };
+  
+  
 
   return {
     conversations,
@@ -323,7 +320,8 @@ const useChat = () => {
     loading,
     setModalAcceptAndRemove,
     modalAcceptAndRemove,
-    logOut
+    logOut,
+    formatarData
   };
 };
 

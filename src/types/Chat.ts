@@ -17,4 +17,5 @@ export interface Conversation {
     content: string;
     senderId: number;
     conversationId: number;
+    createdAt: string
   }

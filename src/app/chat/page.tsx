@@ -50,7 +50,8 @@ const ChatPage = () => {
     loading,
     setModalAcceptAndRemove,
     modalAcceptAndRemove,
-    logOut
+    logOut,
+    formatarData
   } = useChat();
 
   const modalConversas = () => {
@@ -146,21 +147,22 @@ const ChatPage = () => {
                           </div>
                           <p className="text-sm lg:text-xl">{user.name}</p>
                         </div>
-                        {!receivedInvites.some((receive) => receive.receiverId == userId) && (
+                        {!receivedInvites.some(
+                          (receive) => receive.receiverId == userId
+                        ) && (
                           <div>
-                          {!sentInvites.some(
-                            (invite) => invite.receiverId == user.id
-                          ) && (
-                            <button
-                              onClick={() => convidar(user.id)}
-                              className="bg-[#7E57C2] text-white font-bold rounded-[10px] text-xs lg:text-sm p-2"
-                            >
-                              convidar
-                            </button>
-                          )}
-                        </div>
+                            {!sentInvites.some(
+                              (invite) => invite.receiverId == user.id
+                            ) && (
+                              <button
+                                onClick={() => convidar(user.id)}
+                                className="bg-[#7E57C2] text-white font-bold rounded-[10px] text-xs lg:text-sm p-2"
+                              >
+                                convidar
+                              </button>
+                            )}
+                          </div>
                         )}
-                        
                       </div>
                     </div>
                   ))}
@@ -244,11 +246,14 @@ const ChatPage = () => {
                             {modalAcceptAndRemove && (
                               <Modal>
                                 <p className="max-w-[250px] text-center text-lg sm:max-w-[100%]">
-                                  Você deseja aceitar o convite de <b>{invite.sender.name}</b>?
+                                  Você deseja aceitar o convite de{" "}
+                                  <b>{invite.sender.name}</b>?
                                 </p>
                                 <div className="flex gap-10 mt-8">
                                   <button
-                                    onClick={() => setModalAcceptAndRemove(false)}
+                                    onClick={() =>
+                                      setModalAcceptAndRemove(false)
+                                    }
                                     className="bg-white w-[90px] h-[30px] text-black rounded-[10px] text-xl p-1 flex items-center justify-center"
                                   >
                                     Fechar
@@ -310,9 +315,10 @@ const ChatPage = () => {
           <p className="text-3xl mt-6">{nomeUser}</p>
           <div className="mt-7">
             <button
-            onClick={() => logOut()}
-             className="p-1 bg-[#8ab3cf] text-black w-[80px] rounded-xl">
-                Sair
+              onClick={() => logOut()}
+              className="p-1 bg-[#8ab3cf] text-black w-[80px] rounded-xl"
+            >
+              Sair
             </button>
           </div>
         </div>
@@ -433,6 +439,7 @@ const ChatPage = () => {
                         }`}
                       >
                         <p>{message.content}</p>
+                        <p>{formatarData(message.createdAt)}</p>
                       </li>
                     ))}
                     <div ref={messagesEndRef} />{" "}

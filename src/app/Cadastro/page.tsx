@@ -1,134 +1,45 @@
 "use client";
-import { useState, useRef } from "react";
-import { useRouter } from "next/navigation";
 import AvatarEditor from "react-avatar-editor";
 import Link from "next/link";
-
-// Defina uma imagem padrão para os usuários que não enviarem uma foto
-const defaultProfilePicture = "/assets/defaultProfile.png";
+import Image from "next/image";
+import imagelogin from "../../assets/imagemlogin.png";
+import useUser from "@/hooks/useUser";
+import LoadingSpinner from "../Loading";
 
 const Cadastro = () => {
-  const [step, setStep] = useState(1); // Controla as etapas
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [senha, setSenha] = useState("");
-  const [confirmarSenha, setConfirmarSenha] = useState("");
-  const [profilePicture, setProfilePicture] = useState<File | null>(null); // Imagem selecionada pelo usuário
-  const [scale, setScale] = useState<number>(1); // Estado para o zoom da imagem
-  const editorRef = useRef<AvatarEditor>(null);
-  const router = useRouter();
-
-  const setCookie = (name: string, value: string, days: number) => {
-    const expires = new Date(Date.now() + days * 864e5).toUTCString();
-    document.cookie = `${name}=${encodeURIComponent(
-      value
-    )}; expires=${expires}; path=/`;
-  };
-
-  // Função para avançar as etapas
-  const nextStep = (e: React.FormEvent) => {
-    e.preventDefault(); // Evita o recarregamento da página
-    if (step === 1) {
-      // Adicione qualquer validação de nome/email aqui, se necessário
-      setStep(2);
-    } else if (step === 2) {
-      if (senha !== confirmarSenha) {
-        alert("As senhas não coincidem!");
-        return;
-      }
-      setStep(3);
-    }
-  };
-
-  // Função para retroceder as etapas
-  const previousStep = () => {
-    if (step > 1) setStep(step - 1);
-  };
-
-  // Função para enviar os dados de cadastro
-  const cadastrarUsuario = async (e: React.FormEvent) => {
-    e.preventDefault(); // Impede o recarregamento da página
-
-    let profilePictureBlob: Blob | null = null;
-    if (editorRef.current) {
-      const canvas = editorRef.current.getImage(); // Obtém a imagem ajustada no canvas
-      profilePictureBlob = await new Promise<Blob | null>((resolve) =>
-        canvas.toBlob(resolve)
-      );
-    }
-
-    const formData = new FormData();
-    formData.append("name", name);
-    formData.append("email", email);
-    formData.append("password", senha);
-
-    // Se o usuário não tiver enviado uma foto, use a imagem padrão
-    if (profilePictureBlob) {
-      formData.append(
-        "profilePicture",
-        profilePictureBlob,
-        "profilePicture.png"
-      );
-    } else {
-      const defaultPictureBlob = await fetch(defaultProfilePicture).then(
-        (res) => res.blob()
-      );
-      formData.append(
-        "profilePicture",
-        defaultPictureBlob,
-        "defaultProfile.png"
-      );
-    }
-
-    try {
-      const res = await fetch("http://localhost:3333/users", {
-        method: "POST",
-        body: formData,
-      });
-
-      if (!res.ok) {
-        throw new Error(`Erro ao cadastrar: ${res.status} ${res.statusText}`);
-      }
-
-      const data = await res.json();
-      const token = data.access_token;
-
-      // Se necessário, salvar o token JWT nos cookies
-      document.cookie = `token=${token}; path=/; max-age=86400`;
-
-      router.push("/chat");
-    } catch (error) {
-      console.error("Erro ao cadastrar usuário:", error);
-    } finally {
-      const res = await fetch("http://localhost:3333/auth/login", {
-        method: "POST",
-        body: JSON.stringify({
-          email: email,
-          password: senha,
-        }),
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-
-      const data = await res.json();
-      const token = data.access_token;
-
-      // Salvando o token JWT nos cookies
-      setCookie("token", token, 1); // Expira em 7 dias
-    }
-  };
-
-  // Função para lidar com o upload de imagem
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setProfilePicture(file);
-    }
-  };
+  const {
+    step,
+    cadastrarUsuario,
+    nextStep,
+    setName,
+    name,
+    email,
+    setEmail,
+    setSenha,
+    senha,
+    setConfirmarSenha,
+    confirmarSenha,
+    handleImageChange,
+    profilePicture,
+    editorRef,
+    scale,
+    setScale,
+    previousStep,
+    loading,
+  } = useUser();
 
   return (
     <main className="min-h-screen flex items-center justify-center bg-gray-900">
+      <aside className="hidden md:flex flex-col items-center  mr-12">
+        <div className="">
+          <Image
+            src={imagelogin}
+            alt="Astronaut Cat"
+            width={400}
+            height={400}
+          />
+        </div>
+      </aside>
       <section className="bg-gray-800 p-8 rounded-lg shadow-md w-[350px] max-w-sm">
         <h2 className="text-xl font-bold text-[#7E57C2] text-center mb-8">
           CADASTRO - ETAPA {step} de 3
@@ -275,6 +186,7 @@ const Cadastro = () => {
           </span>
         </div>
       </section>
+      {loading && <LoadingSpinner />}
     </main>
   );
 };
