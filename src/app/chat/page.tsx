@@ -51,7 +51,7 @@ const ChatPage = () => {
     setModalAcceptAndRemove,
     modalAcceptAndRemove,
     logOut,
-    formatarData
+    formatarData,
   } = useChat();
 
   const modalConversas = () => {
@@ -182,7 +182,7 @@ const ChatPage = () => {
         </div>
         <div className="flex flex-col w-[95%]">
           <div>
-            <h2 className="text-xl font-bold mb-4">Enviados</h2>
+            <h2 className="text-base font-bold mb-4">Enviados</h2>
             <div className="mt-5">
               {sentInvites.length > 0 ? (
                 sentInvites.map((invite) => (
@@ -214,7 +214,7 @@ const ChatPage = () => {
             </div>
           </div>
           <div>
-            <h2 className="text-sm font-bold mt-6">Recebidos</h2>
+            <h2 className="text-base font-bold mt-6">Recebidos</h2>
             <div className="mt-5">
               {receivedInvites.length > 0 ? (
                 receivedInvites.map((invite) => (
@@ -287,7 +287,7 @@ const ChatPage = () => {
                   </div>
                 ))
               ) : (
-                <p className="text-sm text-black sm:text-base">
+                <p className="text-xs text-black sm:text-base">
                   Você não recebeu nenhum convite.
                 </p>
               )}
@@ -432,17 +432,23 @@ const ChatPage = () => {
                     {messages.map((message) => (
                       <li
                         key={message.id}
-                        className={`p-2 flex flex-col rounded-md w-auto min-w-[100px] ${
+                        className={`p-2 flex justify-between gap-4 w-auto min-w-[125px] max-w-[50%]  ${
                           message.senderId === Number(userId)
-                            ? "bg-blue-100 text-blue-800 items-end self-end"
-                            : "bg-gray-200 text-gray-800 items-start self-start"
+                            ? "bg-blue-100 text-blue-800 items-end self-end rounded-tl-2xl rounded-bl-2xl rounded-br-2xl"
+                            : "bg-gray-200 text-gray-800 items-end self-start rounded-tr-2xl rounded-bl-2xl rounded-br-2xl"
                         }`}
                       >
-                        <p>{message.content}</p>
-                        <p>{formatarData(message.createdAt)}</p>
+                        <div className="flex flex-col break-words whitespace-normal gap-5 w-auto min-w-[60%]">
+                          <p className="text-xs sm:text-base break-words ">
+                            {message.content}
+                          </p>
+                        </div>
+                        <p className="text-xs text-right mb-[-5px]">
+                          {formatarData(message.createdAt)}
+                        </p>
                       </li>
                     ))}
-                    <div ref={messagesEndRef} />{" "}
+                    <div ref={messagesEndRef} />
                   </ul>
                 </div>
               </div>

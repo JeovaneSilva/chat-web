@@ -279,7 +279,7 @@ const useChat = () => {
     const ano = data.getUTCFullYear(); // Ano completo
   
     // Retorne os valores formatados
-    return `${hora}:${minutos} - ${dia}/${mes}`
+    return `${hora}:${minutos}`
   };
   
   
