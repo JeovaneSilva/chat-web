@@ -1,4 +1,4 @@
-import { getCookie } from "@/utils/tokenFunction";
+import { getCookie } from "@/utils/token";
 
 const token = getCookie("token");
 

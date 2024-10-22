@@ -1,6 +1,6 @@
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
-import { setCookie } from "@/utils/tokenFunction";
+import { setCookie } from "@/utils/token";
 import { Cadastrar, Logar } from "@/services/userService";
 import AvatarEditor from "react-avatar-editor";
 

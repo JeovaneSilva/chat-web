@@ -1,17 +1,18 @@
 "use client";
-
-// import { useRouter, useSearchParams } from "next/navigation";
-
+import React from 'react';
+import { ToastContainer } from 'react-toastify';
 import { BiMessageAdd, BiMessageDetail } from "react-icons/bi";
 import { MdOutlineMailOutline } from "react-icons/md";
 import { FaArrowLeft, FaCheck } from "react-icons/fa6";
 import { GoPaperAirplane } from "react-icons/go";
 import { FaEnvelopeOpenText } from "react-icons/fa6";
+import 'react-toastify/dist/ReactToastify.css';
 
 import useChat from "@/hooks/useChat";
 import { FaRegTrashAlt } from "react-icons/fa";
 import Modal from "@/components/modal/Modal";
 import LoadingSpinner from "../Loading";
+import { formatarData } from '@/utils/formData';
 
 const ChatPage = () => {
   const {
@@ -45,13 +46,10 @@ const ChatPage = () => {
     newMessage,
     setNewMessage,
     handleSendMessage,
-    modalConvite,
-    setModalConvite,
     loading,
     setModalAcceptAndRemove,
     modalAcceptAndRemove,
     logOut,
-    formatarData,
   } = useChat();
 
   const modalConversas = () => {
@@ -428,11 +426,11 @@ const ChatPage = () => {
                     ))}
                 </div>
                 <div className="p-4">
-                  <ul className="mt-20 space-y-2 flex flex-col">
+                  <ul className="mt-20 gap-3 flex flex-col">
                     {messages.map((message) => (
                       <li
                         key={message.id}
-                        className={`p-2 flex justify-between gap-4 w-auto min-w-[125px] max-w-[50%]  ${
+                        className={`p-2 flex justify-between gap-4 w-auto min-w-[125px] max-w-[60%] sm:max-w-[50%]  ${
                           message.senderId === Number(userId)
                             ? "bg-blue-100 text-blue-800 items-end self-end rounded-tl-2xl rounded-bl-2xl rounded-br-2xl"
                             : "bg-gray-200 text-gray-800 items-end self-start rounded-tr-2xl rounded-bl-2xl rounded-br-2xl"
@@ -480,19 +478,7 @@ const ChatPage = () => {
 
       {loading && <LoadingSpinner />}
 
-      {modalConvite && (
-        <Modal>
-          <div className="gap-8 flex flex-col items-center">
-            <p className="text-xl text-white">Convite enviado com sucesso!</p>
-            <button
-              onClick={() => setModalConvite(false)}
-              className="bg-white w-[100px] h-[35px] text-black rounded-lg text-xl p-1"
-            >
-              Fechar
-            </button>
-          </div>
-        </Modal>
-      )}
+      <ToastContainer />
     </main>
   );
 };

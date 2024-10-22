@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Conversation, Message } from "@/types/Chat";
-import { User, DecodedToken } from "@/types/User";
+import { User } from "@/types/User";
 import { Invite } from "@/types/Invites";
 import io from "socket.io-client";
 import {
@@ -13,88 +13,59 @@ import {
   SelecionarConversa,
 } from "@/services/chatService";
 import { BuscarUsuarios } from "@/services/userService";
-import { decodeToken } from "@/utils/tokenFunction";
-import { getCookie } from "@/utils/tokenFunction";
+import { decodeToken } from "@/utils/token";
+import { getCookie } from "@/utils/token";
+import {
+  conversationCreatedErro,
+  conversationCreatedOk,
+  invitationAcceptedErro,
+  invitationAcceptedOk,
+  invitationSentError,
+  invitationSentOk,
+} from "@/utils/toastify";
 
 const socket = io("http://localhost:3333");
 
 const useChat = () => {
   const router = useRouter();
+
+  // Estados relacionados ao usuário
   const [userId, setUserId] = useState<number>(0);
   const [fotoPerfil, setfotoPerfil] = useState<string>("");
   const [nomeUser, setnomeUser] = useState<string>("");
+
+  // Estados relacionados às conversas e mensagens
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [selectedConversation, setSelectedConversation] = useState<
     number | null
   >(null);
   const [messages, setMessages] = useState<Message[]>([]);
-  const [newMessage, setNewMessage] = useState("");
-  const [searchQuery, setSearchQuery] = useState("");
+  const [newMessage, setNewMessage] = useState<string>("");
+
+  // Estados relacionados à pesquisa e convites
+  const [searchQuery, setSearchQuery] = useState<string>("");
   const [allUsers, setAllUsers] = useState<User[]>([]);
   const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
   const [sentInvites, setSentInvites] = useState<Invite[]>([]);
   const [receivedInvites, setReceivedInvites] = useState<Invite[]>([]);
-  const [showModal, setShowModal] = useState(false);
-  const [conversasModal, setconversasModal] = useState(true);
-  const [addConversaModal, setaddConversaModal] = useState(false);
-  const [convitesModal, setconvitesModal] = useState(false);
-  const [perfilModal, setPerfilModal] = useState(false);
-  const [modalAberto, setModalAberto] = useState("conversas");
-  const [modalConvite, setModalConvite] = useState(false);
-  const [modalAcceptAndRemove, setModalAcceptAndRemove] = useState(false);
+
+  // Estados relacionados aos modais
+  const [showModal, setShowModal] = useState<boolean>(false);
+  const [conversasModal, setconversasModal] = useState<boolean>(true);
+  const [addConversaModal, setaddConversaModal] = useState<boolean>(false);
+  const [convitesModal, setconvitesModal] = useState<boolean>(false);
+  const [perfilModal, setPerfilModal] = useState<boolean>(false);
+  const [modalAberto, setModalAberto] = useState<string>("conversas");
+  const [modalAcceptAndRemove, setModalAcceptAndRemove] =
+    useState<boolean>(false);
+
+  // Outros estados e referências
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
 
   const token = getCookie("token");
-  // Função para buscar os convites (enviados e recebidos)
-  const fetchInvites = async () => {
-    try {
-      const data = await BuscarConvites(userId);
-      setSentInvites(data.sentInvites);
-      setReceivedInvites(data.receivedInvites);
-    } catch (error) {
-      console.error("Erro ao buscar convites:", error);
-    }
-  };
 
-  // Enviar um convite
-  const convidar = async (recepId: number) => {
-    setLoading(true);
-    try {
-      const res = await EnviarConvite(recepId, userId);
-      if (res.ok) {
-        fetchInvites(); // Atualiza a lista de convites
-        setModalConvite(true);
-      } else {
-        console.error("Erro ao enviar convite");
-      }
-    } catch (error) {
-      console.error("Erro ao enviar convite:", error);
-    }
-    setLoading(false);
-  };
-
-  // Aceitar um convite
-  const aceitarConvite = async (invitationId: number, senderId: number) => {
-    setLoading(true);
-    try {
-      const res = await AcceptConvite(invitationId);
-
-      CriarConversa(senderId);
-
-      if (res.ok) {
-        setModalAcceptAndRemove(false);
-        fetchInvites(); // Atualiza a lista de convites
-      } else {
-        console.error("Erro ao aceitar convite");
-      }
-    } catch (error) {
-      console.error("Erro ao aceitar convite:", error);
-    }
-    setLoading(false);
-  };
-
-  const recusarConvite = () => {};
+  /* ------------------ useEffects ------------------ */
 
   useEffect(() => {
     const fetchAndDecodeToken = () => {
@@ -112,16 +83,6 @@ const useChat = () => {
 
     fetchAndDecodeToken();
   }, []);
-
-  const fetchConversations = async () => {
-    try {
-      const data = await BuscarConversa(userId);
-      setConversations(data);
-    } catch (error) {
-      console.error("Erro ao buscar conversas:", error);
-      setConversations([]);
-    }
-  };
 
   useEffect(() => {
     if (userId) {
@@ -146,6 +107,26 @@ const useChat = () => {
       messagesEndRef.current.scrollIntoView({ behavior: "instant" });
     }
   }, [messages]);
+
+  useEffect(() => {
+    fetchAllUsers();
+  }, []);
+
+  useEffect(() => {
+    fetchInvites();
+  }, [userId]);
+
+  // ############## Funções de Conversas #################
+
+  const fetchConversations = async () => {
+    try {
+      const data = await BuscarConversa(userId);
+      setConversations(data);
+    } catch (error) {
+      console.error("Erro ao buscar conversas:", error);
+      setConversations([]);
+    }
+  };
 
   const selectConversation = async (conversationId: number) => {
     setSelectedConversation(conversationId);
@@ -174,50 +155,80 @@ const useChat = () => {
     setNewMessage("");
   };
 
-  // Função para carregar todos os usuários uma única vez
-  const fetchAllUsers = async () => {
-    try {
-      const data = await BuscarUsuarios();
-      setAllUsers(data);
-    } catch (error) {
-      console.error("Erro ao buscar usuários:", error);
-    }
-  };
-
-  useEffect(() => {
-    fetchAllUsers();
-  }, []);
-
-  // Função de filtragem local com base na pesquisa
-  const handleSearch = (query: string) => {
-    setSearchQuery(query);
-
-    if (query.trim() !== "") {
-      const filtered = allUsers.filter((user) =>
-        user.name.toLowerCase().includes(query.toLowerCase())
-      );
-      setFilteredUsers(filtered);
-      setShowModal(true); // Exibe o modal quando a pesquisa é feita
-    } else {
-      setFilteredUsers([]);
-      setShowModal(false); // Esconde o modal se a pesquisa for apagada
-    }
-  };
-
   const CriarConversa = async (recepId: number) => {
     try {
       const res = await CriarConverse(userId, recepId);
 
-      if (!res.ok) {
+      if (res.ok) {
+        conversationCreatedOk();
+      } else {
+        conversationCreatedErro();
         throw new Error(`Erro HTTP! Status: ${res.status}`);
       }
+
       const data = await res.json();
-      setAllUsers(data); // Certifique-se de que o que está retornando é a lista de usuários.
-      alert("criada");
+      setAllUsers(data);
     } catch (error) {
       console.error("Erro ao criar a conversa:", error);
     }
   };
+
+  const fecharConversa = () => {
+    setSelectedConversation(null);
+  };
+
+  // ############## Funções de convites #################
+
+  const fetchInvites = async () => {
+    try {
+      const data = await BuscarConvites(userId);
+      setSentInvites(data.sentInvites);
+      setReceivedInvites(data.receivedInvites);
+    } catch (error) {
+      console.error("Erro ao buscar convites:", error);
+    }
+  };
+
+  const convidar = async (recepId: number) => {
+    setLoading(true);
+    try {
+      const res = await EnviarConvite(recepId, userId);
+      if (res.ok) {
+        fetchInvites();
+        invitationSentOk();
+      } else {
+        invitationSentError();
+        console.error("Erro ao enviar convite");
+      }
+    } catch (error) {
+      console.error("Erro ao enviar convite:", error);
+    }
+    setLoading(false);
+  };
+
+  const aceitarConvite = async (invitationId: number, senderId: number) => {
+    setLoading(true);
+    try {
+      const res = await AcceptConvite(invitationId);
+
+      if (res.ok) {
+        invitationAcceptedOk();
+        CriarConversa(senderId);
+        setModalAcceptAndRemove(false);
+        fetchInvites();
+      } else {
+        console.error("Erro ao aceitar convite");
+        invitationAcceptedErro();
+      }
+    } catch (error) {
+      console.error("Erro ao aceitar convite:", error);
+    }
+    setLoading(false);
+  };
+
+  const recusarConvite = () => {};
+
+  // ############## Funções de Modal #################
 
   const showModalConversas = () => {
     setconversasModal(true);
@@ -246,11 +257,6 @@ const useChat = () => {
     setModalAberto("convites");
   };
 
-  // Chamando as funções
-  useEffect(() => {
-    fetchInvites(); // Busca os convites enviados e recebidos ao carregar a página
-  }, [userId]);
-
   const showModalPerfil = () => {
     setconversasModal(false);
     setaddConversaModal(false);
@@ -259,31 +265,32 @@ const useChat = () => {
     setModalAberto("perfil");
   };
 
-  const fecharConversa = () => {
-    setSelectedConversation(null);
+  // ############## Funções de usuários e outros #################
+
+  const fetchAllUsers = async () => {
+    try {
+      const data = await BuscarUsuarios();
+      setAllUsers(data);
+    } catch (error) {
+      console.error("Erro ao buscar usuários:", error);
+    }
   };
 
-  const logOut = () => {
-    router.push("/");
-  };
+  const handleSearch = (query: string) => {
+    setSearchQuery(query);
 
-  const formatarData = (dataISO: string) => {
-    // Converta a string para um objeto Date
-    const data = new Date(dataISO);
-  
-    // Extraia os valores desejados
-    const hora = data.getUTCHours().toString().padStart(2, '0'); // Horas formatadas (00-23)
-    const minutos = data.getUTCMinutes().toString().padStart(2, '0'); // Minutos formatados (00-59)
-    const dia = data.getUTCDate().toString().padStart(2, '0'); // Dia do mês (01-31)
-    const mes = (data.getUTCMonth() + 1).toString().padStart(2, '0'); // Mês formatado (01-12)
-    const ano = data.getUTCFullYear(); // Ano completo
-  
-    // Retorne os valores formatados
-    return `${hora}:${minutos}`
+    if (query.trim() !== "") {
+      const filtered = allUsers.filter((user) =>
+        user.name.toLowerCase().includes(query.toLowerCase())
+      );
+      setFilteredUsers(filtered);
+      setShowModal(true); 
+    } else {
+      setFilteredUsers([]);
+      setShowModal(false);
+    }
   };
   
-  
-
   return {
     conversations,
     selectedConversation,
@@ -295,8 +302,6 @@ const useChat = () => {
     filteredUsers,
     sentInvites,
     convidar,
-    modalConvite,
-    setModalConvite,
     receivedInvites,
     aceitarConvite,
     recusarConvite,
@@ -320,8 +325,7 @@ const useChat = () => {
     loading,
     setModalAcceptAndRemove,
     modalAcceptAndRemove,
-    logOut,
-    formatarData
+    logOut: () => router.push('/'),
   };
 };
 
