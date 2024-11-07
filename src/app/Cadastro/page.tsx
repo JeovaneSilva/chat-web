@@ -2,9 +2,10 @@
 import AvatarEditor from "react-avatar-editor";
 import Link from "next/link";
 import Image from "next/image";
-import imagelogin from "../../assets/imagemlogin.png";
+import imagelogin from "../../assets/imagemlogin.svg";
 import useUser from "@/hooks/useUser";
 import LoadingSpinner from "../Loading";
+import { FiEye, FiEyeOff } from "react-icons/fi"; // Ícones de olho
 
 const Cadastro = () => {
   const {
@@ -26,7 +27,12 @@ const Cadastro = () => {
     setScale,
     previousStep,
     loading,
+    showConfirmPassword,
+    showPassword,
+    toggleConfirmPasswordVisibility,
+    togglePasswordVisibility
   } = useUser();
+
 
   return (
     <main className="min-h-screen flex items-center justify-center bg-gray-900">
@@ -41,7 +47,7 @@ const Cadastro = () => {
         </div>
       </aside>
       <section className="bg-gray-800 p-8 rounded-lg shadow-md w-[350px] max-w-sm">
-        <h2 className="text-xl font-bold text-[#7E57C2] text-center mb-8">
+        <h2 className="text-xl font-bold text-[#4b98cc] text-center mb-8">
           CADASTRO - ETAPA {step} de 3
         </h2>
         <form onSubmit={step === 3 ? cadastrarUsuario : nextStep}>
@@ -49,7 +55,7 @@ const Cadastro = () => {
           {step === 1 && (
             <div>
               <div className="mb-4">
-                <label className="block text-[#7E57C2] mb-2">Nome</label>
+                <label className="block text-[#4b98cc] mb-2">Nome</label>
                 <input
                   type="text"
                   placeholder="Nome"
@@ -61,7 +67,7 @@ const Cadastro = () => {
               </div>
 
               <div className="mb-4">
-                <label className="block text-[#7E57C2] mb-2">Email</label>
+                <label className="block text-[#4b98cc] mb-2">Email</label>
                 <input
                   type="email"
                   placeholder="Email"
@@ -77,30 +83,52 @@ const Cadastro = () => {
           {/* Etapa 2: Senha e Confirmar Senha */}
           {step === 2 && (
             <div>
-              <div className="mb-4">
-                <label className="block text-[#7E57C2] mb-2">Senha</label>
+              <div className="mb-4 relative">
+                <label className="block text-[#4b98cc] mb-2">Senha</label>
                 <input
-                  type="password"
+                  type={showPassword ? "text" : "password"} // Alterna entre texto e senha
                   placeholder="Senha"
                   value={senha}
                   onChange={(e) => setSenha(e.target.value)}
-                  className="w-full px-4 py-2 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400"
+                  className="w-full px-4 py-2 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 pr-10" // Espaço para o ícone
                   required
                 />
+                <button
+                  type="button"
+                  onClick={togglePasswordVisibility}
+                  className="absolute mt-3 mr-1 right-2  text-gray-300"
+                >
+                  {showPassword ? (
+                    <FiEyeOff className="text-[15px]" />
+                  ) : (
+                    <FiEye className="text-[15px]" />
+                  )}
+                </button>
               </div>
 
-              <div className="mb-6">
-                <label className="block text-[#7E57C2] mb-2">
+              <div className="mb-6 relative">
+                <label className="block text-[#4b98cc] mb-2">
                   Confirmar Senha
                 </label>
                 <input
-                  type="password"
+                  type={showConfirmPassword ? "text" : "password"} // Alterna entre texto e senha
                   placeholder="Confirmar Senha"
                   value={confirmarSenha}
                   onChange={(e) => setConfirmarSenha(e.target.value)}
-                  className="w-full px-4 py-2 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400"
+                  className="w-full px-4 py-2 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 pr-10" // Espaço para o ícone
                   required
                 />
+                <button
+                  type="button"
+                  onClick={toggleConfirmPasswordVisibility}
+                  className="absolute mt-3 mr-1 right-2  text-gray-300"
+                >
+                  {showPassword ? (
+                    <FiEyeOff className="text-[15px]" />
+                  ) : (
+                    <FiEye className="text-[15px]" />
+                  )}
+                </button>
               </div>
             </div>
           )}
@@ -109,7 +137,7 @@ const Cadastro = () => {
           {step === 3 && (
             <div>
               <div className="mb-6 text-center">
-                <label className="block text-[#7E57C2] mb-2">
+                <label className="block text-[#4b98cc] mb-2">
                   Foto de Perfil
                 </label>
                 <input
@@ -126,22 +154,22 @@ const Cadastro = () => {
                   <div
                     className="relative overflow-hidden flex justify-center items-center"
                     style={{
-                      width: "200px", // Largura reduzida
-                      height: "200px", // Altura reduzida
-                      border: "10px solid rgba(255, 255, 255, 0.5)", // Borda semi-transparente
-                      borderRadius: "50%", // Borda redonda
+                      width: "200px",
+                      height: "200px",
+                      border: "10px solid rgba(255, 255, 255, 0.5)",
+                      borderRadius: "50%",
                       boxShadow: "0 0 8px rgba(0, 0, 0, 0.5)",
-                      background: "rgba(0, 0, 0, 0.5)", // Fundo escuro e semi-transparente
+                      background: "rgba(0, 0, 0, 0.5)",
                     }}
                   >
                     <AvatarEditor
                       ref={editorRef}
                       image={profilePicture}
-                      width={200} // Largura ajustada
-                      height={200} // Altura ajustada
+                      width={200}
+                      height={200}
                       border={50}
-                      borderRadius={100} // Mantém o formato redondo
-                      color={[255, 255, 255, 0.6]} // Cor de fundo
+                      borderRadius={100}
+                      color={[255, 255, 255, 0.6]}
                       scale={scale}
                       rotate={0}
                     />
@@ -173,7 +201,7 @@ const Cadastro = () => {
             )}
             <button
               type="submit"
-              className="bg-[#7E57C2] hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg transition duration-300"
+              className="bg-[#4b98cc] hover:bg-[#1f3f55] text-white font-bold py-2 px-4 rounded-lg transition duration-300"
             >
               {step === 3 ? "Finalizar Cadastro" : "Próxima Etapa"}
             </button>
@@ -181,7 +209,7 @@ const Cadastro = () => {
         </form>
         <div className="flex w-full justify-between text-white mt-4">
           <p>Já possui uma conta? </p>
-          <span className="text-[#7E57C2] hover:text-green-600">
+          <span className="text-[#77a8c9] hover:text-[#4180ab]">
             <Link href="/"> Faça Login</Link>
           </span>
         </div>

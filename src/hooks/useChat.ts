@@ -23,6 +23,7 @@ import {
   invitationSentError,
   invitationSentOk,
 } from "@/utils/toastify";
+import useLoading from "./useLoading";
 
 const socket = io("http://localhost:3333");
 
@@ -33,6 +34,7 @@ const useChat = () => {
   const [userId, setUserId] = useState<number>(0);
   const [fotoPerfil, setfotoPerfil] = useState<string>("");
   const [nomeUser, setnomeUser] = useState<string>("");
+  const { loading, setLoading } = useLoading();
 
   // Estados relacionados às conversas e mensagens
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -61,7 +63,6 @@ const useChat = () => {
 
   // Outros estados e referências
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
-  const [loading, setLoading] = useState<boolean>(false);
 
   const token = getCookie("token");
 
@@ -137,6 +138,7 @@ const useChat = () => {
       }
       const data = await res.json();
       setMessages(Array.isArray(data) ? data : []);
+      console.log(data)
     } catch (error) {
       console.error("Erro ao buscar mensagens:", error);
       setMessages([]);
@@ -284,13 +286,13 @@ const useChat = () => {
         user.name.toLowerCase().includes(query.toLowerCase())
       );
       setFilteredUsers(filtered);
-      setShowModal(true); 
+      setShowModal(true);
     } else {
       setFilteredUsers([]);
       setShowModal(false);
     }
   };
-  
+
   return {
     conversations,
     selectedConversation,
@@ -325,7 +327,7 @@ const useChat = () => {
     loading,
     setModalAcceptAndRemove,
     modalAcceptAndRemove,
-    logOut: () => router.push('/'),
+    logOut: () => router.push("/"),
   };
 };
 

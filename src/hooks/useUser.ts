@@ -10,13 +10,15 @@ const useUser = () => {
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
   const [loading, setLoading] = useState<boolean>(false);
-  const [step, setStep] = useState(1); // Controla as etapas
+  const [step, setStep] = useState(1); 
   const [name, setName] = useState("");
   const [confirmarSenha, setConfirmarSenha] = useState("");
-  const [profilePicture, setProfilePicture] = useState<File | null>(null); // Imagem selecionada pelo usuário
-  const [scale, setScale] = useState<number>(1); // Estado para o zoom da imagem
+  const [profilePicture, setProfilePicture] = useState<File | null>(null); 
+  const [scale, setScale] = useState<number>(1); 
   const editorRef = useRef<AvatarEditor>(null);
   const router = useRouter();
+  const [showPassword, setShowPassword] = useState(false); 
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false); 
 
   //  LOGIN
   const loginUser = async (e: React.FormEvent) => {
@@ -140,6 +142,15 @@ const useUser = () => {
     }
   };
 
+  // mostrar senha 
+  const togglePasswordVisibility = () => {
+    setShowPassword((prev) => !prev);
+  };
+
+  const toggleConfirmPasswordVisibility = () => {
+    setShowConfirmPassword((prev) => !prev);
+  };
+
   return {
     loginUser,
     setEmail,
@@ -160,6 +171,10 @@ const useUser = () => {
     setScale,
     previousStep,
     loading,
+    togglePasswordVisibility,
+    showPassword,
+    toggleConfirmPasswordVisibility,
+    showConfirmPassword
   };
 };
 

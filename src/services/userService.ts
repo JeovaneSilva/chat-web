@@ -3,7 +3,7 @@ import { getCookie } from "@/utils/token";
 const token = getCookie("token");
 
 export const BuscarUsuarios = async () => {
-  const response = await fetch("http://localhost:3333/users", {
+  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}users`, {
     method: "GET",
     headers: { authorization: `Bearer ${token}` },
     credentials: "include",
@@ -12,8 +12,8 @@ export const BuscarUsuarios = async () => {
   return response.json();
 };
 
-export const Logar = async (email:string,senha:string) => {
-  const response = await fetch("http://localhost:3333/auth/login", {
+export const Logar = async (email: string, senha: string) => {
+  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}auth/login`, {
     method: "POST",
     body: JSON.stringify({
       email: email,
@@ -23,14 +23,26 @@ export const Logar = async (email:string,senha:string) => {
       "Content-Type": "application/json",
     },
   });
-  return response
+  return response;
 };
 
-export const Cadastrar = async (formData:FormData) => {
-  const response = await fetch("http://localhost:3333/users", {
+export const Cadastrar = async (formData: FormData) => {
+  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}users`, {
     method: "POST",
     body: formData,
   });
 
-  return response
+  return response;
 };
+
+export const forgotPassword = async (email:string) => {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}auth/recuperar-senha`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email }),
+    }
+  );
+  return response
+}

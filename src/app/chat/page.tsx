@@ -388,7 +388,7 @@ const ChatPage = () => {
           </div>
         </div>
 
-        <div className="w-3/4 h-screen flex flex-col shadow-lg">
+        <div className="w-3/5 h-screen flex flex-col shadow-lg">
           {selectedConversation ? (
             <div className="fixed w-screen flex flex-col h-full border-l border-black bg-[#8ab3cf] sm:static sm:w-auto">
               <div className="overflow-y-auto h-[90%] border-b border-black">
