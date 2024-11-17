@@ -10,40 +10,46 @@ const useUser = () => {
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
   const [loading, setLoading] = useState<boolean>(false);
-  const [step, setStep] = useState(1); 
+  const [step, setStep] = useState(1);
   const [name, setName] = useState("");
   const [confirmarSenha, setConfirmarSenha] = useState("");
-  const [profilePicture, setProfilePicture] = useState<File | null>(null); 
-  const [scale, setScale] = useState<number>(1); 
+  const [profilePicture, setProfilePicture] = useState<File | null>(null);
+  const [scale, setScale] = useState<number>(1);
   const editorRef = useRef<AvatarEditor>(null);
   const router = useRouter();
-  const [showPassword, setShowPassword] = useState(false); 
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false); 
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null); 
 
   //  LOGIN
   const loginUser = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setErrorMessage(null);
+
     try {
+      if (!email || !senha) {
+        throw new Error("Preencha todos os campos.");
+      }
+
       const res = await Logar(email, senha);
 
       if (!res.ok) {
-        throw new Error(`Erro no login: ${res.status} ${res.statusText}`);
+        throw new Error("Email ou senha inválidos.");
       }
 
       const data = await res.json();
       const token = data.access_token;
 
-      // Salvando o token JWT nos cookies
-      setCookie("token", token, 1); // Expira em 7 dias
+      setCookie("token", token, 1);
 
       if (data.access_token) {
         router.push("/chat");
       } else {
-        console.error("Token de acesso não encontrado.");
+        throw new Error("Token de acesso não encontrado.");
       }
-    } catch (error) {
-      console.error("Erro ao fazer login:", error);
+    } catch (error: any) {
+      setErrorMessage(error.message || "Erro ao autenticar.");
     }
     setLoading(false);
   };
@@ -51,9 +57,8 @@ const useUser = () => {
   //   CADASTRO
   // Função para avançar as etapas
   const nextStep = (e: React.FormEvent) => {
-    e.preventDefault(); // Evita o recarregamento da página
+    e.preventDefault();
     if (step === 1) {
-      // Adicione qualquer validação de nome/email aqui, se necessário
       setStep(2);
     } else if (step === 2) {
       if (senha !== confirmarSenha) {
@@ -64,19 +69,18 @@ const useUser = () => {
     }
   };
 
-  // Função para retroceder as etapas
   const previousStep = () => {
     if (step > 1) setStep(step - 1);
   };
 
   // Função para enviar os dados de cadastro
   const cadastrarUsuario = async (e: React.FormEvent) => {
-    e.preventDefault(); // Impede o recarregamento da página
-    setLoading(true)
+    e.preventDefault();
+    setLoading(true);
 
     let profilePictureBlob: Blob | null = null;
     if (editorRef.current) {
-      const canvas = editorRef.current.getImage(); // Obtém a imagem ajustada no canvas
+      const canvas = editorRef.current.getImage();
       profilePictureBlob = await new Promise<Blob | null>((resolve) =>
         canvas.toBlob(resolve)
       );
@@ -87,7 +91,6 @@ const useUser = () => {
     formData.append("email", email);
     formData.append("password", senha);
 
-    // Se o usuário não tiver enviado uma foto, use a imagem padrão
     if (profilePictureBlob) {
       formData.append(
         "profilePicture",
@@ -109,29 +112,20 @@ const useUser = () => {
       const res = await Cadastrar(formData);
 
       if (!res.ok) {
+        alert("deu erro");
         throw new Error(`Erro ao cadastrar: ${res.status} ${res.statusText}`);
       }
 
       const data = await res.json();
       const token = data.access_token;
 
-      // Se necessário, salvar o token JWT nos cookies
       document.cookie = `token=${token}; path=/; max-age=86400`;
 
       router.push("/");
     } catch (error) {
       console.error("Erro ao cadastrar usuário:", error);
     }
-    // } finally {
-    //   const res = await Logar(email, senha);
-
-    //   const data = await res.json();
-    //   const token = data.access_token;
-
-    //   // Salvando o token JWT nos cookies
-    //   setCookie("token", token, 1); // Expira em 7 dias
-    // }
-    setLoading(false)
+    setLoading(false);
   };
 
   // Função para lidar com o upload de imagem
@@ -142,7 +136,6 @@ const useUser = () => {
     }
   };
 
-  // mostrar senha 
   const togglePasswordVisibility = () => {
     setShowPassword((prev) => !prev);
   };
@@ -174,7 +167,8 @@ const useUser = () => {
     togglePasswordVisibility,
     showPassword,
     toggleConfirmPasswordVisibility,
-    showConfirmPassword
+    showConfirmPassword,
+    errorMessage
   };
 };
 

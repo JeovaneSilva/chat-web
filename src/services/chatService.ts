@@ -1,11 +1,6 @@
-const getCookie = (name: string): string | null => {
-  const cookie = document.cookie
-    .split("; ")
-    .find((row) => row.startsWith(`${name}=`));
-  return cookie ? decodeURIComponent(cookie.split("=")[1]) : null;
-};
+import Cookies from "js-cookie";
 
-const token = getCookie("token");
+const token = Cookies.get("token");
 
 export const BuscarConvites = async (userId: number) => {
   const response = await fetch(

@@ -14,20 +14,19 @@ const Login = () => {
     loading,
     togglePasswordVisibility,
     showPassword,
+    errorMessage
   } = useUser();
 
   return (
     <main className="min-h-screen flex items-center justify-center bg-gray-900">
       <div className="flex flex-col md:flex-row items-center justify-center">
         <aside className="hidden md:flex flex-col items-center mr-12">
-          <div>
-            <Image
-              src={imagelogin}
-              alt="Astronaut Cat"
-              width={400}
-              height={400}
-            />
-          </div>
+          <Image
+            src={imagelogin}
+            alt="Astronaut Cat"
+            width={400}
+            height={400}
+          />
         </aside>
 
         <section className="bg-gray-800 p-8 rounded-lg shadow-md w-[350px] max-w-sm">
@@ -49,16 +48,16 @@ const Login = () => {
             <div className="mb-1 relative">
               <label className="block text-[#4b98cc] mb-2">Senha</label>
               <input
-                type={showPassword ? "text" : "password"} // Alterna entre texto e senha
+                type={showPassword ? "text" : "password"}
                 placeholder="Senha"
                 onChange={(e) => setSenha(e.target.value)}
-                className="w-full px-4 py-2 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 pr-10" // Espaço para o ícone
+                className="w-full px-4 py-2 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 pr-10"
                 required
               />
               <button
                 type="button"
                 onClick={togglePasswordVisibility}
-                className="absolute mt-3 mr-1 right-2  text-gray-600"
+                className="absolute mt-3 mr-1 right-2 text-gray-600"
               >
                 {showPassword ? (
                   <FiEyeOff className="text-[15px]" />
@@ -67,6 +66,10 @@ const Login = () => {
                 )}
               </button>
             </div>
+
+            {errorMessage && ( // Exibe a mensagem de erro
+              <div className="mb-1 text-red-500 flex items-center justify-center text-sm">{errorMessage}</div>
+            )}
 
             <div className="mb-5 text-right">
               <Link
@@ -85,9 +88,9 @@ const Login = () => {
             </button>
           </form>
           <div className="flex w-full justify-between text-white mt-4">
-            <p>Ainda não possui conta? </p>
+            <p>Ainda não possui conta?</p>
             <span className="text-[#77a8c9] hover:text-[#4180ab]">
-              <Link href="/Cadastro">Cadastrar-se</Link>{" "}
+              <Link href="/Cadastro">Cadastrar-se</Link>
             </span>
           </div>
         </section>

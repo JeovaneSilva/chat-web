@@ -1,6 +1,6 @@
-import { getCookie } from "@/utils/token";
+import Cookies from "js-cookie";
 
-const token = getCookie("token");
+const token = Cookies.get("token");
 
 export const BuscarUsuarios = async () => {
   const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}users`, {

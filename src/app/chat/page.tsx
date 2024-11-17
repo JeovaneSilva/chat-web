@@ -1,18 +1,18 @@
 "use client";
-import React from 'react';
-import { ToastContainer } from 'react-toastify';
+import React, { useState } from "react";
+import { ToastContainer } from "react-toastify";
 import { BiMessageAdd, BiMessageDetail } from "react-icons/bi";
 import { MdOutlineMailOutline } from "react-icons/md";
 import { FaArrowLeft, FaCheck } from "react-icons/fa6";
 import { GoPaperAirplane } from "react-icons/go";
 import { FaEnvelopeOpenText } from "react-icons/fa6";
-import 'react-toastify/dist/ReactToastify.css';
+import "react-toastify/dist/ReactToastify.css";
 
 import useChat from "@/hooks/useChat";
 import { FaRegTrashAlt } from "react-icons/fa";
 import Modal from "@/components/modal/Modal";
 import LoadingSpinner from "../Loading";
-import { formatarData } from '@/utils/formData';
+import { formatarData } from "@/utils/formData";
 
 const ChatPage = () => {
   const {
@@ -324,6 +324,27 @@ const ChatPage = () => {
     );
   };
 
+  const [selectedMessage, setSelectedMessage] = useState("");
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+
+  const openEditModal = (message: string) => {
+    setSelectedMessage(message);
+    setIsEditModalOpen(true);
+  };
+
+  const handleDoubleClick = (message: string) => {
+    openEditModal(message);
+  };
+
+  let touchTimer: any;
+  const handleTouchStart = (message: string) => {
+    touchTimer = setTimeout(() => openEditModal(message), 500); // 500ms para detectar toque longo
+  };
+
+  const handleTouchEnd = () => {
+    clearTimeout(touchTimer);
+  };
+
   return (
     <main className="w-screen h-screen relative">
       <div className="flex w-screen h-screen">
@@ -430,6 +451,9 @@ const ChatPage = () => {
                     {messages.map((message) => (
                       <li
                         key={message.id}
+                        onDoubleClick={() => handleDoubleClick(message.content)}
+                        onTouchStart={() => handleTouchStart(message.content)}
+                        onTouchEnd={handleTouchEnd}
                         className={`p-2 flex justify-between gap-4 w-auto min-w-[125px] max-w-[60%] sm:max-w-[50%]  ${
                           message.senderId === Number(userId)
                             ? "bg-blue-100 text-blue-800 items-end self-end rounded-tl-2xl rounded-bl-2xl rounded-br-2xl"
@@ -477,6 +501,28 @@ const ChatPage = () => {
       {/* modais */}
 
       {loading && <LoadingSpinner />}
+
+      {isEditModalOpen && (
+        <Modal>
+          <h2>Editar ou Excluir Mensagem {selectedMessage}</h2>
+          <div>
+            <button
+              onClick={() => {
+                /* Função para editar a mensagem */
+              }}
+            >
+              Editar
+            </button>
+            <button
+              onClick={() => {
+                /* Função para excluir a mensagem */
+              }}
+            >
+              Excluir
+            </button>
+          </div>
+        </Modal>
+      )}
 
       <ToastContainer />
     </main>

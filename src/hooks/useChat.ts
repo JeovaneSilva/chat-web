@@ -3,6 +3,7 @@ import { useRouter } from "next/navigation";
 import { Conversation, Message } from "@/types/Chat";
 import { User } from "@/types/User";
 import { Invite } from "@/types/Invites";
+import Cookies from "js-cookie";
 import io from "socket.io-client";
 import {
   AcceptConvite,
@@ -14,7 +15,6 @@ import {
 } from "@/services/chatService";
 import { BuscarUsuarios } from "@/services/userService";
 import { decodeToken } from "@/utils/token";
-import { getCookie } from "@/utils/token";
 import {
   conversationCreatedErro,
   conversationCreatedOk,
@@ -64,7 +64,7 @@ const useChat = () => {
   // Outros estados e referências
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
-  const token = getCookie("token");
+  const token = Cookies.get("token");
 
   /* ------------------ useEffects ------------------ */
 
@@ -138,7 +138,7 @@ const useChat = () => {
       }
       const data = await res.json();
       setMessages(Array.isArray(data) ? data : []);
-      console.log(data)
+      console.log(data);
     } catch (error) {
       console.error("Erro ao buscar mensagens:", error);
       setMessages([]);
@@ -293,6 +293,12 @@ const useChat = () => {
     }
   };
 
+  const logOut = () => {
+    // Remover cookies específicos
+    Cookies.remove("token"); // Certifique-se de que o nome corresponde ao nome do cookie
+    // Redireciona para outra página
+    router.push("/");
+  };
   return {
     conversations,
     selectedConversation,
@@ -327,7 +333,7 @@ const useChat = () => {
     loading,
     setModalAcceptAndRemove,
     modalAcceptAndRemove,
-    logOut: () => router.push("/"),
+    logOut,
   };
 };
 
