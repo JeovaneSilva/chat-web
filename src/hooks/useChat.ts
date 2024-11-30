@@ -11,6 +11,7 @@ import {
   BuscarConvites,
   CriarConverse,
   EnviarConvite,
+  RecusedConvite,
   SelecionarConversa,
 } from "@/services/chatService";
 import { BuscarUsuarios } from "@/services/userService";
@@ -20,6 +21,8 @@ import {
   conversationCreatedOk,
   invitationAcceptedErro,
   invitationAcceptedOk,
+  invitationRecusedErro,
+  invitationRecusedOk,
   invitationSentError,
   invitationSentOk,
 } from "@/utils/toastify";
@@ -228,7 +231,36 @@ const useChat = () => {
     setLoading(false);
   };
 
-  const recusarConvite = () => {};
+  const recusarConvite = async (invitationId: number) => {
+    setLoading(true);
+    try {
+      const res = await RecusedConvite(invitationId);
+
+      if (res.ok) {
+        invitationRecusedOk();
+        setModalAcceptAndRemove(false);
+        fetchInvites();
+      } else {
+        console.error("Erro ao aceitar convite");
+        invitationRecusedErro();
+      }
+    } catch (error) {
+      console.error("Erro ao aceitar convite:", error);
+    }
+    setLoading(false);
+  };
+
+  const verificarConvites = (user: { id: number }) => {
+    const jaEnviado = sentInvites.some(
+      (invite) => invite.receiverId === user.id && invite.senderId === userId
+    );
+
+    const jaRecebido = receivedInvites.some(
+      (receive) => receive.senderId === user.id && receive.receiverId === userId
+    );
+
+    return !jaEnviado && !jaRecebido;
+  };
 
   // ############## Funções de Modal #################
 
@@ -299,10 +331,23 @@ const useChat = () => {
     // Redireciona para outra página
     router.push("/");
   };
+
+  const updateMessage = (
+    messageId: number,
+    updatedContent: Partial<Message>
+  ) => {
+    setMessages((prevMessages) =>
+      prevMessages.map((message) =>
+        message.id === messageId ? { ...message, ...updatedContent } : message
+      )
+    );
+  };
+
   return {
     conversations,
     selectedConversation,
     selectConversation,
+    updateMessage,
     userId,
     searchQuery,
     handleSearch,
@@ -313,6 +358,7 @@ const useChat = () => {
     receivedInvites,
     aceitarConvite,
     recusarConvite,
+    verificarConvites,
     fotoPerfil,
     nomeUser,
     modalAberto,

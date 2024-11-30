@@ -13,12 +13,14 @@ import { FaRegTrashAlt } from "react-icons/fa";
 import Modal from "@/components/modal/Modal";
 import LoadingSpinner from "../Loading";
 import { formatarData } from "@/utils/formData";
+import Mensagens from "@/components/mensagens";
 
 const ChatPage = () => {
   const {
     conversations,
     selectedConversation,
     selectConversation,
+    updateMessage,
     userId,
     searchQuery,
     handleSearch,
@@ -29,6 +31,7 @@ const ChatPage = () => {
     receivedInvites,
     aceitarConvite,
     recusarConvite,
+    verificarConvites,
     nomeUser,
     fotoPerfil,
     modalAberto,
@@ -145,21 +148,13 @@ const ChatPage = () => {
                           </div>
                           <p className="text-sm lg:text-xl">{user.name}</p>
                         </div>
-                        {!receivedInvites.some(
-                          (receive) => receive.receiverId == userId
-                        ) && (
-                          <div>
-                            {!sentInvites.some(
-                              (invite) => invite.receiverId == user.id
-                            ) && (
-                              <button
-                                onClick={() => convidar(user.id)}
-                                className="bg-[#7E57C2] text-white font-bold rounded-[10px] text-xs lg:text-sm p-2"
-                              >
-                                convidar
-                              </button>
-                            )}
-                          </div>
+                        {verificarConvites(user) && (
+                          <button
+                            onClick={() => convidar(user.id)}
+                            className="bg-[#7E57C2] text-white font-bold rounded-[10px] text-xs lg:text-sm p-2"
+                          >
+                            convidar
+                          </button>
                         )}
                       </div>
                     </div>
@@ -242,7 +237,11 @@ const ChatPage = () => {
                               <FaEnvelopeOpenText className="text-2xl text-white" />
                             </button>
                             {modalAcceptAndRemove && (
-                              <Modal>
+                              <Modal
+                                heigth="h-[200px]"
+                                width="w-[300px]"
+                                smWidth="w-[400px]"
+                              >
                                 <p className="max-w-[250px] text-center text-lg sm:max-w-[100%]">
                                   Você deseja aceitar o convite de{" "}
                                   <b>{invite.sender.name}</b>?
@@ -269,7 +268,7 @@ const ChatPage = () => {
                                       <FaCheck className="text-xl" />
                                     </button>
                                     <button
-                                      onClick={() => recusarConvite()}
+                                      onClick={() => recusarConvite(invite.id)}
                                       className="bg-[#df3c3c] text-white font-bold w-[40px] h-[30px] flex items-center justify-center rounded-[10px] text-sm p-2"
                                     >
                                       <FaRegTrashAlt className="text-xl" />
@@ -322,27 +321,6 @@ const ChatPage = () => {
         </div>
       </div>
     );
-  };
-
-  const [selectedMessage, setSelectedMessage] = useState("");
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-
-  const openEditModal = (message: string) => {
-    setSelectedMessage(message);
-    setIsEditModalOpen(true);
-  };
-
-  const handleDoubleClick = (message: string) => {
-    openEditModal(message);
-  };
-
-  let touchTimer: any;
-  const handleTouchStart = (message: string) => {
-    touchTimer = setTimeout(() => openEditModal(message), 500); // 500ms para detectar toque longo
-  };
-
-  const handleTouchEnd = () => {
-    clearTimeout(touchTimer);
   };
 
   return (
@@ -423,7 +401,10 @@ const ChatPage = () => {
                   {conversations
                     .filter((conversa) => conversa.id == selectedConversation)
                     .map((conversation) => (
-                      <div className="cursor-pointer font-bold text-[#122f42] flex">
+                      <div
+                        key={conversation.id}
+                        className="cursor-pointer font-bold text-[#122f42] flex"
+                      >
                         <div className="ml-2 flex items-center gap-4">
                           <img
                             src={`http://localhost:3333/uploads/profile_pictures/${
@@ -449,26 +430,14 @@ const ChatPage = () => {
                 <div className="p-4">
                   <ul className="mt-20 gap-3 flex flex-col">
                     {messages.map((message) => (
-                      <li
-                        key={message.id}
-                        onDoubleClick={() => handleDoubleClick(message.content)}
-                        onTouchStart={() => handleTouchStart(message.content)}
-                        onTouchEnd={handleTouchEnd}
-                        className={`p-2 flex justify-between gap-4 w-auto min-w-[125px] max-w-[60%] sm:max-w-[50%]  ${
-                          message.senderId === Number(userId)
-                            ? "bg-blue-100 text-blue-800 items-end self-end rounded-tl-2xl rounded-bl-2xl rounded-br-2xl"
-                            : "bg-gray-200 text-gray-800 items-end self-start rounded-tr-2xl rounded-bl-2xl rounded-br-2xl"
-                        }`}
-                      >
-                        <div className="flex flex-col break-words whitespace-normal gap-5 w-auto min-w-[60%]">
-                          <p className="text-xs sm:text-base break-words ">
-                            {message.content}
-                          </p>
-                        </div>
-                        <p className="text-xs text-right mb-[-5px]">
-                          {formatarData(message.createdAt)}
-                        </p>
-                      </li>
+                      <Mensagens
+                        content={message.content}
+                        messageId={message.id}
+                        senderId={message.senderId}
+                        userId={userId}
+                        messageCreatedAt={message.createdAt}
+                        onUpdateMessage={updateMessage}
+                      />
                     ))}
                     <div ref={messagesEndRef} />
                   </ul>
@@ -501,28 +470,6 @@ const ChatPage = () => {
       {/* modais */}
 
       {loading && <LoadingSpinner />}
-
-      {isEditModalOpen && (
-        <Modal>
-          <h2>Editar ou Excluir Mensagem {selectedMessage}</h2>
-          <div>
-            <button
-              onClick={() => {
-                /* Função para editar a mensagem */
-              }}
-            >
-              Editar
-            </button>
-            <button
-              onClick={() => {
-                /* Função para excluir a mensagem */
-              }}
-            >
-              Excluir
-            </button>
-          </div>
-        </Modal>
-      )}
 
       <ToastContainer />
     </main>

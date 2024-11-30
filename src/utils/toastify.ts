@@ -54,6 +54,32 @@ export const invitationAcceptedErro = () => {
     transition: Bounce,
   });
 };
+export const invitationRecusedOk = () => {
+  toast.success("Convite negado com sucesso!", {
+    position: "bottom-right",
+    autoClose: 5000,
+    hideProgressBar: false,
+    closeOnClick: true,
+    pauseOnHover: true,
+    draggable: true,
+    progress: undefined,
+    theme: "dark",
+    transition: Bounce,
+  });
+};
+export const invitationRecusedErro = () => {
+  toast.error("erro ao negar convite!", {
+    position: "bottom-right",
+    autoClose: 5000,
+    hideProgressBar: false,
+    closeOnClick: true,
+    pauseOnHover: true,
+    draggable: true,
+    progress: undefined,
+    theme: "dark",
+    transition: Bounce,
+  });
+};
 
 export const conversationCreatedOk = () => {
   toast.success("Conversa criada com sucesso!", {

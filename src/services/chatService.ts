@@ -44,6 +44,18 @@ export const AcceptConvite = async (invitationId: number) => {
 
   return response;
 };
+export const RecusedConvite = async (invitationId: number) => {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}invites/decline/${invitationId}`,
+    {
+      method: "POST",
+      headers: { authorization: `Bearer ${token}` },
+      credentials: "include",
+    }
+  );
+
+  return response;
+};
 
 export const BuscarConversa = async (userId: number) => {
   const response = await fetch(
