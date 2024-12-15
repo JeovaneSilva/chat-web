@@ -82,7 +82,7 @@ const ChatPage = () => {
                   <div className="flex items-center gap-5">
                     <div className="flex border w-[60px] h-[60px] ml-0 border-black rounded-[100%] sm:ml-2">
                       <img
-                        src={`http://localhost:3333/uploads/profile_pictures/${
+                        src={`${
                           conversation.user1Id === Number(userId)
                             ? conversation.user2.profilePicture
                             : conversation.user1.profilePicture
@@ -139,7 +139,7 @@ const ChatPage = () => {
                         <div className="flex items-center gap-3 lg:gap-5">
                           <div className="flex border border-black w-[40px] h-[40px] lg:w-[60px] lg:h-[60px] rounded-[100%] ml-2">
                             <img
-                              src={`http://localhost:3333/uploads/profile_pictures/${user.profilePicture}`}
+                              src={`${user.profilePicture}`}
                               className="rounded-[100%]  w-full h-full"
                               alt="Profile Picture"
                             />
@@ -182,7 +182,7 @@ const ChatPage = () => {
                       <div className="flex items-center gap-2">
                         <div className="flex w-[50px] h-[50px] border border-black rounded-[100%] ">
                           <img
-                            src={`http://localhost:3333/uploads/profile_pictures/${invite.receiver.profilePicture}`}
+                            src={`${invite.receiver.profilePicture}`}
                             className="rounded-[100%]  w-full h-full"
                             alt="Profile Picture"
                           />
@@ -214,7 +214,7 @@ const ChatPage = () => {
                       <div className="flex items-center gap-2 ">
                         <div className="flex w-[50px] h-[50px] border border-black rounded-[100%] ">
                           <img
-                            src={`http://localhost:3333/uploads/profile_pictures/${invite.sender.profilePicture}`}
+                            src={`${invite.sender.profilePicture}`}
                             className="rounded-[100%]  w-full h-full"
                             alt="Profile Picture"
                           />
@@ -302,7 +302,7 @@ const ChatPage = () => {
         <div className="flex flex-col w-full items-center justify-center mt-7">
           <div className="w-[100px] h-[100px] lg:w-[200px] lg:h-[200px]">
             <img
-              src={`http://localhost:3333/uploads/profile_pictures/${fotoPerfil}`}
+              src={`${fotoPerfil}`}
               className="rounded-[100%]  w-full h-full"
               alt="Profile Picture"
             />
@@ -369,7 +369,7 @@ const ChatPage = () => {
                   onClick={showModalPerfil}
                 >
                   <img
-                    src={`http://localhost:3333/uploads/profile_pictures/${fotoPerfil}`}
+                    src={`${fotoPerfil}`}
                     className="rounded-[100%]  w-full h-full"
                     alt="Profile Picture"
                   />
@@ -405,7 +405,7 @@ const ChatPage = () => {
                       >
                         <div className="ml-2 flex items-center gap-4">
                           <img
-                            src={`http://localhost:3333/uploads/profile_pictures/${
+                            src={`${
                               conversation.user1Id === Number(userId)
                                 ? conversation.user2.profilePicture
                                 : conversation.user1.profilePicture
