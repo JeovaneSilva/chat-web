@@ -83,7 +83,7 @@ const useMensagemLogic = ({
 
       if (!response.ok) throw new Error("Erro ao atualizar a mensagem");
 
-      const updatedMessage = await response.json();
+      await response.json();
       onUpdateMessage(messageId, { content: newContent });
       closeEditModal();
       closeMenuModal();

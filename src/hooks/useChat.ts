@@ -86,7 +86,7 @@ const useChat = () => {
     };
 
     fetchAndDecodeToken();
-  }, []);
+  }, [token]);
 
   useEffect(() => {
     if (userId) {

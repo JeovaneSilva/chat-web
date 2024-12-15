@@ -48,8 +48,8 @@ const useUser = () => {
       } else {
         throw new Error("Token de acesso não encontrado.");
       }
-    } catch (error: any) {
-      setErrorMessage(error.message || "Erro ao autenticar.");
+    } catch (error) {
+      setErrorMessage("Erro ao autenticar.");
     }
     setLoading(false);
   };

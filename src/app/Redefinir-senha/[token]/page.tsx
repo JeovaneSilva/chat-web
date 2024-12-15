@@ -1,11 +1,10 @@
-// pages/redifinirsenha/[token].tsx
 "use client";
 import LoadingSpinner from "@/app/Loading";
 import Image from "next/image";
-import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css"; // Certifique-se de importar o CSS do toastify
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import ResetPasword from "../../../assets/Resetpassword.svg";
-import { FiEye, FiEyeOff } from "react-icons/fi"; // Ícones de olho (mostrar/ocultar)
+import { FiEye, FiEyeOff } from "react-icons/fi";
 import useResetPassword from "./hooks/useResetPassword";
 
 const RedefinirSenha = () => {

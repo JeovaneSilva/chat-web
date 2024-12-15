@@ -1,5 +1,4 @@
 "use client";
-import React, { useState } from "react";
 import { ToastContainer } from "react-toastify";
 import { BiMessageAdd, BiMessageDetail } from "react-icons/bi";
 import { MdOutlineMailOutline } from "react-icons/md";
@@ -12,7 +11,6 @@ import useChat from "@/hooks/useChat";
 import { FaRegTrashAlt } from "react-icons/fa";
 import Modal from "@/components/modal/Modal";
 import LoadingSpinner from "../Loading";
-import { formatarData } from "@/utils/formData";
 import Mensagens from "@/components/mensagens";
 
 const ChatPage = () => {
@@ -431,6 +429,7 @@ const ChatPage = () => {
                   <ul className="mt-20 gap-3 flex flex-col">
                     {messages.map((message) => (
                       <Mensagens
+                      key={message.id}
                         content={message.content}
                         messageId={message.id}
                         senderId={message.senderId}
