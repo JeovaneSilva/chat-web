@@ -28,7 +28,7 @@ import {
 } from "@/utils/toastify";
 import useLoading from "./useLoading";
 
-const socket = io("http://localhost:3333");
+const socket = io(`${process.env.NEXT_PUBLIC_API_URL}`);
 
 const useChat = () => {
   const router = useRouter();
