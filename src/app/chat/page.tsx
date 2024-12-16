@@ -387,79 +387,79 @@ const ChatPage = () => {
 
         <div className="w-3/5 h-screen flex flex-col shadow-lg">
           {selectedConversation ? (
-            <div className="fixed w-screen flex flex-col h-screen border-l border-black bg-[#8ab3cf] sm:static sm:w-auto">
-              <div className="overflow-y-auto h-[90%] border-b border-black">
-                <div className="fixed flex top-0 bg-[#4180ab] w-full h-[60px] items-center justify-start pl-2">
-                  <button
-                    className="block sm:hidden"
-                    onClick={() => fecharConversa()}
-                  >
-                    <FaArrowLeft className="text-xl" />
-                  </button>
-                  {conversations
-                    .filter((conversa) => conversa.id == selectedConversation)
-                    .map((conversation) => (
-                      <div
-                        key={conversation.id}
-                        className="cursor-pointer font-bold text-[#122f42] flex"
-                      >
-                        <div className="ml-2 flex items-center gap-4">
-                          <img
-                            src={`${
-                              conversation.user1Id === Number(userId)
-                                ? conversation.user2.profilePicture
-                                : conversation.user1.profilePicture
-                            }`}
-                            className="rounded-[100%]  w-[40px] h-[40px]"
-                            alt="Profile Picture"
-                          />
-                          <p className="text-xl">
-                            {" "}
-                            {`${
-                              conversation.user1Id === Number(userId)
-                                ? `${conversation.user2.name} `
-                                : ` ${conversation.user1.name}`
-                            }`}
-                          </p>
-                        </div>
+            <div className="flex flex-col h-full border-l border-black bg-[#8ab3cf]">
+              {/* Cabeçalho fixo */}
+              <div className="flex bg-[#4180ab] h-[60px] items-center justify-start pl-2 border-b border-black">
+                <button
+                  className="block sm:hidden"
+                  onClick={() => fecharConversa()}
+                >
+                  <FaArrowLeft className="text-xl" />
+                </button>
+                {conversations
+                  .filter((conversa) => conversa.id == selectedConversation)
+                  .map((conversation) => (
+                    <div
+                      key={conversation.id}
+                      className="cursor-pointer font-bold text-[#122f42] flex"
+                    >
+                      <div className="ml-2 flex items-center gap-4">
+                        <img
+                          src={`${
+                            conversation.user1Id === Number(userId)
+                              ? conversation.user2.profilePicture
+                              : conversation.user1.profilePicture
+                          }`}
+                          className="rounded-[100%] w-[40px] h-[40px]"
+                          alt="Profile Picture"
+                        />
+                        <p className="text-xl">
+                          {conversation.user1Id === Number(userId)
+                            ? `${conversation.user2.name}`
+                            : `${conversation.user1.name}`}
+                        </p>
                       </div>
-                    ))}
-                </div>
-                <div className="p-4 flex-1 overflow-y-auto">
-                  <ul className="gap-3 flex flex-col">
-                    {messages.map((message) => (
-                      <Mensagens
-                        key={message.id}
-                        content={message.content}
-                        messageId={message.id}
-                        senderId={message.senderId}
-                        userId={userId}
-                        messageCreatedAt={message.createdAt}
-                        onUpdateMessage={updateMessage}
-                      />
-                    ))}
-                    <div ref={messagesEndRef} />
-                  </ul>
-                </div>
+                    </div>
+                  ))}
               </div>
-              <div className="flex h-[10%] w-full">
+
+              {/* Área de mensagens rolável */}
+              <div className="flex-1 overflow-y-auto p-4">
+                <ul className="flex flex-col gap-3">
+                  {messages.map((message) => (
+                    <Mensagens
+                      key={message.id}
+                      content={message.content}
+                      messageId={message.id}
+                      senderId={message.senderId}
+                      userId={userId}
+                      messageCreatedAt={message.createdAt}
+                      onUpdateMessage={updateMessage}
+                    />
+                  ))}
+                  <div ref={messagesEndRef} />
+                </ul>
+              </div>
+
+              {/* Input de mensagens */}
+              <div className="flex h-[60px] w-full border-t border-black">
                 <input
                   type="text"
                   placeholder="Digite sua mensagem..."
                   value={newMessage}
                   onChange={(e) => setNewMessage(e.target.value)}
-                  className="w-full p-2 border rounded-l-md outline-none "
+                  className="w-full p-2 border rounded-l-md outline-none"
                 />
                 <button
                   onClick={handleSendMessage}
-                  className="bg-blue-500 text-white p-2 rounded-r-md w-[60px] flex items-center justify-center "
+                  className="bg-blue-500 text-white p-2 rounded-r-md w-[60px] flex items-center justify-center"
                 >
                   <GoPaperAirplane className="text-3xl" />
                 </button>
               </div>
             </div>
           ) : (
-            <div className="bg-[#8ab3cf] h-full">
+            <div className="bg-[#8ab3cf] h-full flex items-center justify-center">
               Clique em uma conversa para abrir
             </div>
           )}
