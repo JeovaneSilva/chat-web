@@ -387,7 +387,7 @@ const ChatPage = () => {
 
         <div className="w-3/5 h-screen flex flex-col shadow-lg">
           {selectedConversation ? (
-            <div className="fixed w-screen flex flex-col h-full border-l border-black bg-[#8ab3cf] sm:static sm:w-auto">
+            <div className="fixed w-screen flex flex-col h-screen border-l border-black bg-[#8ab3cf] sm:static sm:w-auto">
               <div className="overflow-y-auto h-[90%] border-b border-black">
                 <div className="fixed flex top-0 bg-[#4180ab] w-full h-[60px] items-center justify-start pl-2">
                   <button
@@ -425,11 +425,11 @@ const ChatPage = () => {
                       </div>
                     ))}
                 </div>
-                <div className="p-4">
-                  <ul className="mt-20 gap-3 flex flex-col">
+                <div className="p-4 flex-1 overflow-y-auto">
+                  <ul className="gap-3 flex flex-col">
                     {messages.map((message) => (
                       <Mensagens
-                      key={message.id}
+                        key={message.id}
                         content={message.content}
                         messageId={message.id}
                         senderId={message.senderId}
