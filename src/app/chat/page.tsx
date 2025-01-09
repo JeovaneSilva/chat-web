@@ -385,9 +385,9 @@ const ChatPage = () => {
           </div>
         </div>
 
-        <div className="w-3/5 h-screen flex flex-col shadow-lg">
+        <div className=" w-3/5 h-screen flex flex-col shadow-lg">
           {selectedConversation ? (
-            <div className="flex flex-col h-full border-l border-black bg-[#8ab3cf]">
+            <div className="w-screen z-30 sm:w-auto sm:z-0 flex flex-col h-full border-l border-black bg-[#8ab3cf]">
               {/* Cabeçalho fixo */}
               <div className="flex bg-[#4180ab] h-[60px] items-center justify-start pl-2 border-b border-black">
                 <button
@@ -424,7 +424,7 @@ const ChatPage = () => {
               </div>
 
               {/* Área de mensagens rolável */}
-              <div className="flex-1 overflow-y-auto p-4">
+              <div className="flex-1 overflow-y-auto ">
                 <ul className="flex flex-col gap-3">
                   {messages.map((message) => (
                     <Mensagens

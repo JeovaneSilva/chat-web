@@ -8,6 +8,13 @@ const nextConfig = {
         port: '', // Deixe vazio se não usar uma porta específica
       },
     ],
+    // remotePatterns: [
+    //   {
+    //     protocol: 'http',
+    //     hostname: 'localhost', // Substituindo pelo seu domínio de backend
+    //     port: '3333', // Deixe vazio se não usar uma porta específica
+    //   },
+    // ],
   },
 };
 
