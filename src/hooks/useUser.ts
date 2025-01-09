@@ -1,8 +1,10 @@
 import { useRouter } from "next/navigation";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { setCookie } from "@/utils/token";
 import { Cadastrar, Logar } from "@/services/userService";
 import AvatarEditor from "react-avatar-editor";
+import Cookies from "js-cookie";
+import { jwtDecode, JwtPayload } from "jwt-decode";
 
 const defaultProfilePicture = "/assets/defaultProfile.png";
 
@@ -143,6 +145,32 @@ const useUser = () => {
   const toggleConfirmPasswordVisibility = () => {
     setShowConfirmPassword((prev) => !prev);
   };
+
+
+  useEffect(() => {
+    const checkToken = async () => {
+      const token = Cookies.get("token");
+
+      if (token) {
+        try {
+          const decoded = jwtDecode<JwtPayload>(token);
+
+          // Verifica se o token está expirado
+          if (decoded.exp && decoded.exp * 1000 > Date.now()) {
+            router.push("/chat"); // Token válido
+          } else {
+            console.warn("Token expirado.");
+            Cookies.remove("token"); // Remove o token expirado
+          }
+        } catch (error) {
+          console.error("Erro ao decodificar token:", error);
+          Cookies.remove("token");
+        }
+      }
+    };
+
+    checkToken();
+  }, [router]);
 
   return {
     loginUser,

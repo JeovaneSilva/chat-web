@@ -423,8 +423,7 @@ const ChatPage = () => {
                   ))}
               </div>
 
-              {/* Área de mensagens rolável */}
-              <div className="flex-1 overflow-y-auto p-3">
+              <div className="flex-1 overflow-y-auto p-4">
                 <ul className="flex flex-col gap-3">
                   {messages.map((message) => (
                     <Mensagens
