@@ -1,10 +1,12 @@
 "use client";
 import { ToastContainer } from "react-toastify";
 import { BiMessageAdd, BiMessageDetail } from "react-icons/bi";
-import { MdOutlineMailOutline } from "react-icons/md";
+import { MdOutlineMailOutline,MdEdit  } from "react-icons/md";
 import { FaArrowLeft, FaCheck } from "react-icons/fa6";
 import { GoPaperAirplane } from "react-icons/go";
 import { FaEnvelopeOpenText } from "react-icons/fa6";
+import Image from "next/image";
+import clickConversa from "../../assets/clickConversa.svg";
 import "react-toastify/dist/ReactToastify.css";
 
 import useChat from "@/hooks/useChat";
@@ -51,58 +53,67 @@ const ChatPage = () => {
     setModalAcceptAndRemove,
     modalAcceptAndRemove,
     logOut,
+    searchTerm,
+    setSearchTerm,
+    filteredConversations,
   } = useChat();
 
   const modalConversas = () => {
     return (
-      <div className="text-white w-full pt-4  items-center">
+      <div className="text-white w-full pt-4 items-center">
         <div className="mb-4 flex flex-col pl-6 w-full">
           <h2 className="text-2xl font-bold mb-4">Conversas</h2>
           <input
             type="search"
             placeholder="Buscar suas conversas"
             className="w-[70%] sm:w-[95%] h-6 text-black p-4 border border-black rounded-[10px] outline-none"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)} // Atualiza o estado com o termo de pesquisa
           />
         </div>
 
         {conversations.length > 0 ? (
-          <div className="mt-10">
-            {conversations.map((conversation) => (
-              <div
-                key={conversation.id}
-                // Adiciona a classe de fundo escuro se a conversa estiver selecionada
-                className={`${
-                  selectedConversation === conversation.id
-                    ? "bg-[#306080]"
-                    : "hover:bg-gray-200"
-                } cursor-pointer font-bold p-1 text-[#133347] flex w-[100%]`}
-                onClick={() => selectConversation(conversation.id)}
-              >
-                <div className="flex items-center justify-between w-full p-1 sssm:p-2">
-                  <div className="flex items-center gap-5">
-                    <div className="flex border w-[60px] h-[60px] ml-0 border-black rounded-[100%] sm:ml-2">
-                      <img
-                        src={`${
+          filteredConversations.length > 0 ? (
+            <div className="mt-10">
+              {filteredConversations.map((conversation) => (
+                <div
+                  key={conversation.id}
+                  // Adiciona a classe de fundo escuro se a conversa estiver selecionada
+                  className={`${
+                    selectedConversation === conversation.id
+                      ? "bg-[#306080]"
+                      : "hover:bg-gray-200"
+                  } cursor-pointer font-bold p-1 text-[#133347] flex w-[100%]`}
+                  onClick={() => selectConversation(conversation.id)}
+                >
+                  <div className="flex items-center justify-between w-full p-1 sssm:p-2">
+                    <div className="flex items-center gap-5">
+                      <div className="flex border w-[60px] h-[60px] ml-0 border-black rounded-[100%] sm:ml-2">
+                        <img
+                          src={`${
+                            conversation.user1Id === Number(userId)
+                              ? conversation.user2.profilePicture
+                              : conversation.user1.profilePicture
+                          }`}
+                          className="rounded-[100%] w-full h-full"
+                          alt="Profile Picture"
+                        />
+                      </div>
+                      <p className="text-2xl">
+                        {`${
                           conversation.user1Id === Number(userId)
-                            ? conversation.user2.profilePicture
-                            : conversation.user1.profilePicture
+                            ? conversation.user2.name
+                            : conversation.user1.name
                         }`}
-                        className="rounded-[100%] w-full h-full"
-                        alt="Profile Picture"
-                      />
+                      </p>
                     </div>
-                    <p className="text-2xl">
-                      {`${
-                        conversation.user1Id === Number(userId)
-                          ? conversation.user2.name
-                          : conversation.user1.name
-                      }`}
-                    </p>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          ) : (
+            <div className="ml-6 mt-4">Nenhuma conversa encontrada</div>
+          )
         ) : (
           <div className="ml-6 mt-4">Você não possui conversas</div>
         )}
@@ -300,15 +311,22 @@ const ChatPage = () => {
           <h2 className="text-2xl font-bold mb-4">Perfil</h2>
         </div>
         <div className="flex flex-col w-full items-center justify-center mt-7">
-          <div className="w-[100px] h-[100px] lg:w-[200px] lg:h-[200px]">
+          <div className="w-[100px] h-[100px] lg:w-[190px] lg:h-[190px]">
             <img
               src={`${fotoPerfil}`}
               className="rounded-[100%]  w-full h-full"
               alt="Profile Picture"
             />
           </div>
-          <p className="text-3xl mt-6">{nomeUser}</p>
-          <div className="mt-7">
+          <div className="w-full mt-[60px] sm:mt-[40px] flex flex-col items-start">
+            <p className="text-base sm:text-xl text-black ">Nome de usuário</p>
+            <div className=" w-[95%] mt-3 flex items-center justify-between">
+              <p className="text-base sm:text-xl ml-1">{nomeUser}</p>
+              <MdEdit className="text-base sm:text-xl" />
+            </div>
+          </div>
+
+          <div className="mt-[60px]">
             <button
               onClick={() => logOut()}
               className="p-1 bg-[#8ab3cf] text-black w-[80px] rounded-xl"
@@ -458,8 +476,11 @@ const ChatPage = () => {
               </div>
             </div>
           ) : (
-            <div className="bg-[#8ab3cf] h-full flex items-center justify-center">
-              Clique em uma conversa para abrir
+            <div className="bg-[#8ab3cf] h-full flex flex-col items-center justify-center">
+              <Image src={clickConversa} alt="" width={500} height={500} />
+              <p className="text-xl font-semibold mt-[-40px]">
+                Clique em uma conversa para abrir
+              </p>
             </div>
           )}
         </div>

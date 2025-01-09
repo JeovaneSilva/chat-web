@@ -46,6 +46,7 @@ const useChat = () => {
   >(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState<string>("");
+  const [searchTerm, setSearchTerm] = useState("");
 
   // Estados relacionados à pesquisa e convites
   const [searchQuery, setSearchQuery] = useState<string>("");
@@ -181,6 +182,16 @@ const useChat = () => {
   const fecharConversa = () => {
     setSelectedConversation(null);
   };
+
+  // Filtra as conversas com base no termo de pesquisa
+  const filteredConversations = conversations.filter((conversation) => {
+    const userName =
+      conversation.user1Id === Number(userId)
+        ? conversation.user2.name
+        : conversation.user1.name;
+
+    return userName.toLowerCase().includes(searchTerm.toLowerCase());
+  });
 
   // ############## Funções de convites #################
 
@@ -351,6 +362,9 @@ const useChat = () => {
     userId,
     searchQuery,
     handleSearch,
+    searchTerm,
+    setSearchTerm,
+    filteredConversations,
     showModal,
     filteredUsers,
     sentInvites,
