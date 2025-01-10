@@ -1,7 +1,7 @@
 "use client";
 import { ToastContainer } from "react-toastify";
 import { BiMessageAdd, BiMessageDetail } from "react-icons/bi";
-import { MdOutlineMailOutline,MdEdit  } from "react-icons/md";
+import { MdOutlineMailOutline, MdEdit } from "react-icons/md";
 import { FaArrowLeft, FaCheck } from "react-icons/fa6";
 import { GoPaperAirplane } from "react-icons/go";
 import { FaEnvelopeOpenText } from "react-icons/fa6";
@@ -10,7 +10,7 @@ import clickConversa from "../../assets/clickConversa.svg";
 import "react-toastify/dist/ReactToastify.css";
 
 import useChat from "@/hooks/useChat";
-import { FaRegTrashAlt } from "react-icons/fa";
+import { FaRegTrashAlt, FaTimes } from "react-icons/fa";
 import Modal from "@/components/modal/Modal";
 import LoadingSpinner from "../Loading";
 import Mensagens from "@/components/mensagens";
@@ -56,7 +56,14 @@ const ChatPage = () => {
     searchTerm,
     setSearchTerm,
     filteredConversations,
+    editing,
+    newNomeUser,
+    setNewNomeUser,
+    handleUpdateName,
+    exitHandleUpdateName,
+    setEditing
   } = useChat();
+
 
   const modalConversas = () => {
     return (
@@ -314,15 +321,46 @@ const ChatPage = () => {
           <div className="w-[100px] h-[100px] lg:w-[190px] lg:h-[190px]">
             <img
               src={`${fotoPerfil}`}
-              className="rounded-[100%]  w-full h-full"
+              className="rounded-[100%] w-full h-full"
               alt="Profile Picture"
             />
           </div>
           <div className="w-full mt-[60px] sm:mt-[40px] flex flex-col items-start">
-            <p className="text-base sm:text-xl text-black ">Nome de usuário</p>
-            <div className=" w-[95%] mt-3 flex items-center justify-between">
-              <p className="text-base sm:text-xl ml-1">{nomeUser}</p>
-              <MdEdit className="text-base sm:text-xl" />
+            <p className="text-base sm:text-lg md:text-xl text-black ">Nome de usuário</p>
+            <div className="w-[95%] mt-3 flex items-center">
+              {editing ? (
+                <div className="flex w-full justify-between sm:flex-col lg:flex-row">
+                  <input
+                    type="text"
+                    value={newNomeUser}
+                    onChange={(e) => setNewNomeUser(e.target.value)}
+                    className="text-base w-[60%] outline-none bg-transparent border-0 text-black sm:text-lg md:text-xl ml-1 p-1 border-b-2"
+                  />
+                  <div className="flex gap-4 items-center sm:mt-4">
+                    
+                    <button
+                      onClick={handleUpdateName}
+                      className="w-[30px] h-[30px] md:w-auto md:h-auto flex items-center justify-center bg-green-500 text-white p-2 rounded-md"
+                    >
+                      <FaCheck className="text-lg" />
+                    </button>
+                    <button
+                      onClick={exitHandleUpdateName}
+                      className="w-[30px] h-[30px] md:w-auto md:h-auto flex items-center justify-center bg-red-500 text-white p-2 rounded-md"
+                    >
+                      <FaTimes className="text-xl" />
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex w-full justify-between sm:flex-col lg:flex-row">
+                  <p className="text-base sm:text-xl ml-1">{nomeUser}</p>
+                  <MdEdit
+                    className="text-base sm:text-xl cursor-pointer sm:mt-4"
+                    onClick={() => setEditing(true)}
+                  />
+                </div>
+              )}
             </div>
           </div>
 

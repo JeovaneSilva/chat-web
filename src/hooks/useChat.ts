@@ -14,7 +14,7 @@ import {
   RecusedConvite,
   SelecionarConversa,
 } from "@/services/chatService";
-import { BuscarUsuarios } from "@/services/userService";
+import { buscarUsuario, BuscarUsuarios, updateUserName } from "@/services/userService";
 import { decodeToken } from "@/utils/token";
 import {
   conversationCreatedErro,
@@ -38,6 +38,8 @@ const useChat = () => {
   const [fotoPerfil, setfotoPerfil] = useState<string>("");
   const [nomeUser, setnomeUser] = useState<string>("");
   const { loading, setLoading } = useLoading();
+  const [editing, setEditing] = useState(false);
+  const [newNomeUser, setNewNomeUser] = useState(nomeUser); // Nome para edição
 
   // Estados relacionados às conversas e mensagens
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -73,14 +75,17 @@ const useChat = () => {
   /* ------------------ useEffects ------------------ */
 
   useEffect(() => {
-    const fetchAndDecodeToken = () => {
+    const fetchAndDecodeToken = async () => {
       if (token) {
         const decodedToken = decodeToken(token);
         if (decodedToken) {
           setUserId(decodedToken.sub);
-          setfotoPerfil(decodedToken.foto);
-          setnomeUser(decodedToken.username);
+          const res = await buscarUsuario(decodedToken.sub)
+          const data = await res.json()
+          setfotoPerfil(data.profilePicture);
+          setnomeUser(data.name);
         }
+
       } else {
         console.log("Token não encontrado nos cookies");
       }
@@ -354,6 +359,23 @@ const useChat = () => {
     );
   };
 
+
+  const handleUpdateName = async () => {
+    try {
+      
+      const updatedUser = await updateUserName(userId, newNomeUser);
+      const data = await updatedUser.json();
+      setnomeUser(data.name); // Atualiza o nome exibido no frontend
+      setEditing(false); // Sai do modo de edição
+    } catch (error) {
+      console.error("Erro ao atualizar o nome do usuário:", error);
+    }
+  };
+
+  const exitHandleUpdateName = () => {
+    setEditing(false)
+  }
+
   return {
     conversations,
     selectedConversation,
@@ -375,6 +397,7 @@ const useChat = () => {
     verificarConvites,
     fotoPerfil,
     nomeUser,
+    setnomeUser,
     modalAberto,
     showModalConversas,
     showModalAddConversa,
@@ -394,6 +417,12 @@ const useChat = () => {
     setModalAcceptAndRemove,
     modalAcceptAndRemove,
     logOut,
+    editing,
+    newNomeUser,
+    setNewNomeUser,
+    handleUpdateName,
+    exitHandleUpdateName,
+    setEditing
   };
 };
 
