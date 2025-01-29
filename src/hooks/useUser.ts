@@ -37,6 +37,7 @@ const useUser = () => {
       const res = await Logar(email, senha);
 
       if (!res.ok) {
+        setLoading(false);
         throw new Error("Email ou senha inválidos.");
       }
 
@@ -46,14 +47,15 @@ const useUser = () => {
       setCookie("token", token, 1);
 
       if (data.access_token) {
+        setLoading(false);
         router.push("/chat");
       } else {
         throw new Error("Token de acesso não encontrado.");
       }
     } catch (error) {
+      setLoading(false);
       setErrorMessage("Erro ao autenticar.");
     }
-    setLoading(false);
   };
 
   //   CADASTRO
@@ -187,6 +189,7 @@ const useUser = () => {
     confirmarSenha,
     handleImageChange,
     profilePicture,
+    setProfilePicture,
     editorRef,
     scale,
     setScale,

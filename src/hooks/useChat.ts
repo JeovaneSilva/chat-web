@@ -74,23 +74,23 @@ const useChat = () => {
 
   /* ------------------ useEffects ------------------ */
 
-  useEffect(() => {
-    const fetchAndDecodeToken = async () => {
-      if (token) {
-        const decodedToken = decodeToken(token);
-        if (decodedToken) {
-          setUserId(decodedToken.sub);
-          const res = await buscarUsuario(decodedToken.sub)
-          const data = await res.json()
-          setfotoPerfil(data.profilePicture);
-          setnomeUser(data.name);
-        }
-
-      } else {
-        console.log("Token não encontrado nos cookies");
+  const fetchAndDecodeToken = async () => {
+    if (token) {
+      const decodedToken = decodeToken(token);
+      if (decodedToken) {
+        setUserId(decodedToken.sub);
+        const res = await buscarUsuario(decodedToken.sub)
+        const data = await res.json()
+        setfotoPerfil(data.profilePicture);
+        setnomeUser(data.name);
       }
-    };
 
+    } else {
+      console.log("Token não encontrado nos cookies");
+    }
+  };
+
+  useEffect(() => {
     fetchAndDecodeToken();
   }, [token]);
 
