@@ -92,7 +92,7 @@ const useChat = () => {
 
   useEffect(() => {
     fetchAndDecodeToken();
-  }, [token]);
+  }, [token,userId,]);
 
   useEffect(() => {
     if (userId) {
