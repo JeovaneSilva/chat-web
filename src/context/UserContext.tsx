@@ -23,7 +23,9 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     const fetchAndDecodeToken = async () => {
-      const token = Cookies.get("token");
+      const token =  Cookies.get("token");
+      console.log("teste")
+      console.log(token)
       if (token) {
         const decodedToken = decodeToken(token);
         if (decodedToken) {

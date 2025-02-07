@@ -1,7 +1,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { decodeToken, setCookie } from "@/utils/token";
-import { buscarUsuario, Cadastrar, Logar } from "@/services/userService";
+import { Cadastrar, Logar } from "@/services/userService";
 import AvatarEditor from "react-avatar-editor";
 import Cookies from "js-cookie";
 import { jwtDecode, JwtPayload } from "jwt-decode";
@@ -43,19 +43,18 @@ const useUser = () => {
       }
   
       const data = await res.json();
-      const token = data.access_token;
+      const token = await data.access_token;
+      console.log("token login", token)
   
       setCookie("token", token, 1);
   
-      if (data.access_token) {
+      if (token) {
         // Decodifica e atualiza o contexto global
         const decodedToken = decodeToken(token);
         if (decodedToken) {
           setUserId(decodedToken.sub)
-          const res = await buscarUsuario(decodedToken.sub);
-          const userData = await res.json();
-          setNomeUser(userData.name);
-          setFotoPerfil(userData.profilePicture);
+          setNomeUser(decodedToken.username);
+          setFotoPerfil(decodedToken.foto);
         }
   
         router.push("/chat");

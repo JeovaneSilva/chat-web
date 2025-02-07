@@ -1,9 +1,7 @@
 import { useState, useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
 import { Conversation, Message } from "@/types/Chat";
 import { User } from "@/types/User";
 import { Invite } from "@/types/Invites";
-import Cookies from "js-cookie";
 import io from "socket.io-client";
 import {
   AcceptConvite,
@@ -14,8 +12,7 @@ import {
   RecusedConvite,
   SelecionarConversa,
 } from "@/services/chatService";
-import { buscarUsuario, BuscarUsuarios, updateUserName } from "@/services/userService";
-import { decodeToken } from "@/utils/token";
+import { BuscarUsuarios, updateUserName } from "@/services/userService";
 import {
   conversationCreatedErro,
   conversationCreatedOk,
@@ -32,10 +29,9 @@ import { useUserContext } from "@/context/UserContext";
 const socket = io(`${process.env.NEXT_PUBLIC_API_URL}`);
 
 const useChat = () => {
-  const router = useRouter();
 
   // Estados relacionados ao usuário
-  const { userId, nomeUser, fotoPerfil, setNomeUser, setFotoPerfil,setUserId } = useUserContext();
+  const { userId, nomeUser, fotoPerfil, setNomeUser } = useUserContext();
   const { loading, setLoading } = useLoading();
   const [editing, setEditing] = useState(false);
   const [newNomeUser, setNewNomeUser] = useState(nomeUser); // Nome para edição
@@ -68,9 +64,6 @@ const useChat = () => {
 
   // Outros estados e referências
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
-
-  const token = Cookies.get("token");
-
  
   // ############## Funções de Conversas #################
 
@@ -287,12 +280,6 @@ const useChat = () => {
     }
   };
 
-  const logOut = () => {
-    // Remover cookies específicos
-    Cookies.remove("token"); // Certifique-se de que o nome corresponde ao nome do cookie
-    // Redireciona para outra página
-    router.push("/");
-  };
 
   const updateMessage = (
     messageId: number,
@@ -323,26 +310,6 @@ const useChat = () => {
   }
 
    /* ------------------ useEffects ------------------ */
-
-   const fetchAndDecodeToken = async () => {
-    if (token) {
-      const decodedToken = decodeToken(token);
-      if (decodedToken) {
-        setUserId(decodedToken.sub);
-        const res = await buscarUsuario(decodedToken.sub)
-        const data = await res.json()
-        setFotoPerfil(data.profilePicture);
-        setNomeUser(data.name);
-      }
-
-    } else {
-      console.log("Token não encontrado nos cookies");
-    }
-  };
-
-  useEffect(() => {
-    fetchAndDecodeToken();
-  }, [token,]);
 
   useEffect(() => {
     if (userId) {
@@ -375,9 +342,6 @@ const useChat = () => {
   useEffect(() => {
     fetchInvites();
   }, [userId]);
-
-  console.log(fotoPerfil)
-
 
   return {
     conversations,
@@ -419,7 +383,6 @@ const useChat = () => {
     loading,
     setModalAcceptAndRemove,
     modalAcceptAndRemove,
-    logOut,
     editing,
     newNomeUser,
     setNewNomeUser,

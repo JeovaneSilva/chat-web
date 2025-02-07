@@ -4,7 +4,7 @@ import { useUserContext } from "@/context/UserContext";
 import useChat from "@/hooks/useChat";
 
 const Perfil = () => {
-  const { fotoPerfil, nomeUser } = useUserContext();
+  const { fotoPerfil, nomeUser,logOut } = useUserContext();
   const {
     editing,
     newNomeUser,
@@ -12,7 +12,6 @@ const Perfil = () => {
     handleUpdateName,
     exitHandleUpdateName,
     setEditing,
-    logOut
   } = useChat();
 
   return (

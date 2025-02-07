@@ -9,13 +9,6 @@ export const setCookie = (name: string, value: string, days: number) => {
   )}; expires=${expires}; path=/`;
 };
 
-export const getCookie = (name: string): string | null => {
-  const cookie = document.cookie
-    .split("; ")
-    .find((row) => row.startsWith(`${name}=`));
-  return cookie ? decodeURIComponent(cookie.split("=")[1]) : null;
-};
-
 export const decodeToken = (token: string): DecodedToken | null => {
   try {
     const decoded: DecodedToken = jwtDecode(token);
