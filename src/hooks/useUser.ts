@@ -1,10 +1,12 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { setCookie } from "@/utils/token";
-import { Cadastrar, Logar } from "@/services/userService";
+import { decodeToken, setCookie } from "@/utils/token";
+import { buscarUsuario, Cadastrar, Logar } from "@/services/userService";
 import AvatarEditor from "react-avatar-editor";
 import Cookies from "js-cookie";
 import { jwtDecode, JwtPayload } from "jwt-decode";
+import useChat from "./useChat";
+import { useUserContext } from "@/context/UserContext";
 
 const defaultProfilePicture = "/assets/defaultProfile.png";
 
@@ -21,41 +23,50 @@ const useUser = () => {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null); 
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const { setNomeUser, setFotoPerfil,setUserId } = useUserContext();
 
   //  LOGIN
   const loginUser = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setErrorMessage(null);
-
+  
     try {
       if (!email || !senha) {
         throw new Error("Preencha todos os campos.");
       }
-
+  
       const res = await Logar(email, senha);
-
+  
       if (!res.ok) {
-        setLoading(false);
         throw new Error("Email ou senha inválidos.");
       }
-
+  
       const data = await res.json();
       const token = data.access_token;
-
+  
       setCookie("token", token, 1);
-
+  
       if (data.access_token) {
-        setLoading(false);
+        // Decodifica e atualiza o contexto global
+        const decodedToken = decodeToken(token);
+        if (decodedToken) {
+          setUserId(decodedToken.sub)
+          const res = await buscarUsuario(decodedToken.sub);
+          const userData = await res.json();
+          setNomeUser(userData.name);
+          setFotoPerfil(userData.profilePicture);
+        }
+  
         router.push("/chat");
       } else {
         throw new Error("Token de acesso não encontrado.");
       }
     } catch (error) {
-      setLoading(false);
       setErrorMessage("Erro ao autenticar.");
     }
+    setLoading(false);
   };
 
   //   CADASTRO

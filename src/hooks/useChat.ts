@@ -27,6 +27,7 @@ import {
   invitationSentOk,
 } from "@/utils/toastify";
 import useLoading from "./useLoading";
+import { useUserContext } from "@/context/UserContext";
 
 const socket = io(`${process.env.NEXT_PUBLIC_API_URL}`);
 
@@ -34,9 +35,7 @@ const useChat = () => {
   const router = useRouter();
 
   // Estados relacionados ao usuário
-  const [userId, setUserId] = useState<number>(0);
-  const [fotoPerfil, setfotoPerfil] = useState<string>("");
-  const [nomeUser, setnomeUser] = useState<string>("");
+  const { userId, nomeUser, fotoPerfil, setNomeUser, setFotoPerfil,setUserId } = useUserContext();
   const { loading, setLoading } = useLoading();
   const [editing, setEditing] = useState(false);
   const [newNomeUser, setNewNomeUser] = useState(nomeUser); // Nome para edição
@@ -72,60 +71,7 @@ const useChat = () => {
 
   const token = Cookies.get("token");
 
-  /* ------------------ useEffects ------------------ */
-
-  const fetchAndDecodeToken = async () => {
-    if (token) {
-      const decodedToken = decodeToken(token);
-      if (decodedToken) {
-        setUserId(decodedToken.sub);
-        const res = await buscarUsuario(decodedToken.sub)
-        const data = await res.json()
-        setfotoPerfil(data.profilePicture);
-        setnomeUser(data.name);
-      }
-
-    } else {
-      console.log("Token não encontrado nos cookies");
-    }
-  };
-
-  useEffect(() => {
-    fetchAndDecodeToken();
-  }, [token,userId,]);
-
-  useEffect(() => {
-    if (userId) {
-      fetchConversations();
-    }
-  }, [userId]);
-
-  useEffect(() => {
-    socket.on("message", (message: Message) => {
-      if (selectedConversation === message.conversationId) {
-        setMessages((prevMessages) => [...prevMessages, message]);
-      }
-    });
-
-    return () => {
-      socket.off("message");
-    };
-  }, [selectedConversation]);
-
-  useEffect(() => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: "instant" });
-    }
-  }, [messages]);
-
-  useEffect(() => {
-    fetchAllUsers();
-  }, []);
-
-  useEffect(() => {
-    fetchInvites();
-  }, [userId]);
-
+ 
   // ############## Funções de Conversas #################
 
   const fetchConversations = async () => {
@@ -365,7 +311,7 @@ const useChat = () => {
       
       const updatedUser = await updateUserName(userId, newNomeUser);
       const data = await updatedUser.json();
-      setnomeUser(data.name); // Atualiza o nome exibido no frontend
+      setNomeUser(data.name); // Atualiza o nome exibido no frontend
       setEditing(false); // Sai do modo de edição
     } catch (error) {
       console.error("Erro ao atualizar o nome do usuário:", error);
@@ -375,6 +321,63 @@ const useChat = () => {
   const exitHandleUpdateName = () => {
     setEditing(false)
   }
+
+   /* ------------------ useEffects ------------------ */
+
+   const fetchAndDecodeToken = async () => {
+    if (token) {
+      const decodedToken = decodeToken(token);
+      if (decodedToken) {
+        setUserId(decodedToken.sub);
+        const res = await buscarUsuario(decodedToken.sub)
+        const data = await res.json()
+        setFotoPerfil(data.profilePicture);
+        setNomeUser(data.name);
+      }
+
+    } else {
+      console.log("Token não encontrado nos cookies");
+    }
+  };
+
+  useEffect(() => {
+    fetchAndDecodeToken();
+  }, [token,]);
+
+  useEffect(() => {
+    if (userId) {
+      fetchConversations();
+    }
+  }, [userId]);
+
+  useEffect(() => {
+    socket.on("message", (message: Message) => {
+      if (selectedConversation === message.conversationId) {
+        setMessages((prevMessages) => [...prevMessages, message]);
+      }
+    });
+
+    return () => {
+      socket.off("message");
+    };
+  }, [selectedConversation]);
+
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "instant" });
+    }
+  }, [messages]);
+
+  useEffect(() => {
+    fetchAllUsers();
+  }, []);
+
+  useEffect(() => {
+    fetchInvites();
+  }, [userId]);
+
+  console.log(fotoPerfil)
+
 
   return {
     conversations,
@@ -397,7 +400,7 @@ const useChat = () => {
     verificarConvites,
     fotoPerfil,
     nomeUser,
-    setnomeUser,
+    setNomeUser,
     modalAberto,
     showModalConversas,
     showModalAddConversa,

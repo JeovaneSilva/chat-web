@@ -16,6 +16,10 @@ import LoadingSpinner from "../Loading";
 import Mensagens from "@/components/mensagens";
 import { useState } from "react";
 import useUser from "@/hooks/useUser";
+import { useUserContext } from "@/context/UserContext";
+import Perfil from "./components/Perfil";
+import ConvitesChat from "./components/convitesChat";
+import AddConversas from "./components/addConversas";
 
 const ChatPage = () => {
   const {
@@ -23,19 +27,6 @@ const ChatPage = () => {
     selectedConversation,
     selectConversation,
     updateMessage,
-    userId,
-    searchQuery,
-    handleSearch,
-    showModal,
-    filteredUsers,
-    sentInvites,
-    convidar,
-    receivedInvites,
-    aceitarConvite,
-    recusarConvite,
-    verificarConvites,
-    nomeUser,
-    fotoPerfil,
     modalAberto,
     showModalConversas,
     showModalAddConversa,
@@ -52,20 +43,12 @@ const ChatPage = () => {
     setNewMessage,
     handleSendMessage,
     loading,
-    setModalAcceptAndRemove,
-    modalAcceptAndRemove,
-    logOut,
     searchTerm,
     setSearchTerm,
     filteredConversations,
-    editing,
-    newNomeUser,
-    setNewNomeUser,
-    handleUpdateName,
-    exitHandleUpdateName,
-    setEditing,
   } = useChat();
 
+  const { fotoPerfil, userId} = useUserContext();
 
   const modalConversas = () => {
     return (
@@ -131,255 +114,15 @@ const ChatPage = () => {
   };
 
   const addConversas = () => {
-    return (
-      <div className="text-white w-full pt-4 pl-3 lg:pl-6">
-        <div className="mb-4 flex flex-col w-full">
-          <h2 className="text-2xl font-bold mb-4">Pesquisa</h2>
-          <input
-            type="search"
-            placeholder="Buscar usuários"
-            className="w-[70%] sm:w-[95%] h-6 p-4 text-black border border-black rounded-[10px] outline-none"
-            value={searchQuery}
-            onChange={(e) => handleSearch(e.target.value)}
-          />
-        </div>
-        <div className="flex w-full">
-          {showModal && (
-            <div className="static w-[95%] rounded-[10px]  z-10">
-              <h2 className="text-lg font-bold mb-4">Perfis</h2>
-              <div className="flex flex-col">
-                {filteredUsers
-                  .filter((user) => user.id != userId)
-                  .map((user) => (
-                    <div
-                      key={user.id}
-                      className="hover:bg-gray-200 rounded-md font-bold text-[#122f42] flex  "
-                    >
-                      <div className="flex items-center justify-between w-full p-2">
-                        <div className="flex items-center gap-3 lg:gap-5">
-                          <div className="flex border border-black w-[40px] h-[40px] lg:w-[60px] lg:h-[60px] rounded-[100%] ml-2">
-                            <img
-                              src={`${user.profilePicture}`}
-                              className="rounded-[100%]  w-full h-full"
-                              alt="Profile Picture"
-                            />
-                          </div>
-                          <p className="text-sm lg:text-xl">{user.name}</p>
-                        </div>
-                        {verificarConvites(user) && (
-                          <button
-                            onClick={() => convidar(user.id)}
-                            className="bg-[#7E57C2] text-white font-bold rounded-[10px] text-xs lg:text-sm p-2"
-                          >
-                            convidar
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-    );
+    return <AddConversas />
   };
 
   const convitesChat = () => {
-    return (
-      <div className="text-white w-full pt-4 pl-6">
-        <div className="mb-4 flex flex-col w-full">
-          <h2 className="text-2xl font-bold mb-4">Convites</h2>
-        </div>
-        <div className="flex flex-col w-[95%]">
-          <div>
-            <h2 className="text-base font-bold mb-4">Enviados</h2>
-            <div className="mt-5">
-              {sentInvites.length > 0 ? (
-                sentInvites.map((invite) => (
-                  <div key={invite.id} className="flex flex-col w-full">
-                    <div className="w-full flex items-center sm:flex-col sm:items-start justify-between pr-2 pb-2 md:items-center md:flex-row">
-                      <div className="flex items-center gap-2">
-                        <div className="flex w-[50px] h-[50px] border border-black rounded-[100%] ">
-                          <img
-                            src={`${invite.receiver.profilePicture}`}
-                            className="rounded-[100%]  w-full h-full"
-                            alt="Profile Picture"
-                          />
-                        </div>
-                        <p className="font-bold text-[#122f42]">
-                          {invite.receiver.name}
-                        </p>
-                      </div>
-                      <p className="bg-gray-200 text-xs p-1 mt-2 text-black rounded-[10px] md:mt-0">
-                        {invite.status}
-                      </p>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <p className="text-xs text-black sm:text-base">
-                  Você não enviou nenhum convite.
-                </p>
-              )}
-            </div>
-          </div>
-          <div>
-            <h2 className="text-base font-bold mt-6">Recebidos</h2>
-            <div className="mt-5">
-              {receivedInvites.length > 0 ? (
-                receivedInvites.map((invite) => (
-                  <div key={invite.id} className="flex flex-col w-full">
-                    <div className="w-full flex items-center sm:flex-col sm:items-start justify-between pr-2 pb-2 lg:flex-row lg:items-center">
-                      <div className="flex items-center gap-2 ">
-                        <div className="flex w-[50px] h-[50px] border border-black rounded-[100%] ">
-                          <img
-                            src={`${invite.sender.profilePicture}`}
-                            className="rounded-[100%]  w-full h-full"
-                            alt="Profile Picture"
-                          />
-                        </div>
-                        <p className="font-bold text-[#122f42]">
-                          {invite.sender.name}
-                        </p>
-                      </div>
-                      <div className="flex gap-5 items-center justify-center sm:mt-2 lg:mt-0">
-                        <p className="bg-gray-200 text-xs p-1 text-black rounded-[10px]">
-                          {invite.status}
-                        </p>
-                        {invite.status == "PENDING" && (
-                          <div className=" flex ">
-                            <button
-                              onClick={() => setModalAcceptAndRemove(true)}
-                            >
-                              <FaEnvelopeOpenText className="text-2xl text-white" />
-                            </button>
-                            {modalAcceptAndRemove && (
-                              <Modal
-                                heigth="h-[200px]"
-                                width="w-[300px]"
-                                smWidth="w-[400px]"
-                              >
-                                <p className="max-w-[250px] text-center text-lg sm:max-w-[100%]">
-                                  Você deseja aceitar o convite de{" "}
-                                  <b>{invite.sender.name}</b>?
-                                </p>
-                                <div className="flex gap-10 mt-8">
-                                  <button
-                                    onClick={() =>
-                                      setModalAcceptAndRemove(false)
-                                    }
-                                    className="bg-white w-[90px] h-[30px] text-black rounded-[10px] text-xl p-1 flex items-center justify-center"
-                                  >
-                                    Fechar
-                                  </button>
-                                  <div className="flex gap-4">
-                                    <button
-                                      onClick={() =>
-                                        aceitarConvite(
-                                          invite.id,
-                                          invite.senderId
-                                        )
-                                      }
-                                      className="bg-[#2da555] text-white font-bold w-[40px] h-[30px] flex items-center justify-center rounded-[10px] text-sm p-2"
-                                    >
-                                      <FaCheck className="text-xl" />
-                                    </button>
-                                    <button
-                                      onClick={() => recusarConvite(invite.id)}
-                                      className="bg-[#df3c3c] text-white font-bold w-[40px] h-[30px] flex items-center justify-center rounded-[10px] text-sm p-2"
-                                    >
-                                      <FaRegTrashAlt className="text-xl" />
-                                    </button>
-                                  </div>
-                                </div>
-                              </Modal>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <p className="text-xs text-black sm:text-base">
-                  Você não recebeu nenhum convite.
-                </p>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-    );
+    return <ConvitesChat />
   };
 
   const perfil = () => {
-    return (
-      <div className="text-white w-full pt-4 pl-6">
-        <div className="mb-4 flex flex-col w-full">
-          <h2 className="text-2xl font-bold mb-4">Perfil</h2>
-        </div>
-        <div className="flex flex-col w-full items-center justify-center mt-7">
-          <div className="w-[100px] h-[100px] lg:w-[190px] lg:h-[190px]">
-            <img
-              src={fotoPerfil}
-              className="rounded-[100%] w-full h-full"
-              alt="Profile Picture"
-            />
-          </div>
-          
-        </div>
-
-        <div className="w-full mt-[60px] sm:mt-[40px] flex flex-col items-start">
-          <p className="text-base sm:text-lg md:text-xl text-black ">
-            Nome de usuário
-          </p>
-          <div className="w-[95%] mt-3 flex items-center">
-            {editing ? (
-              <div className="flex w-full justify-between sm:flex-col lg:flex-row">
-                <input
-                  type="text"
-                  value={newNomeUser}
-                  onChange={(e) => setNewNomeUser(e.target.value)}
-                  className="text-base w-[60%] outline-none bg-transparent border-0 text-black sm:text-lg md:text-xl ml-1 p-1 border-b-2"
-                />
-                <div className="flex gap-4 items-center sm:mt-4">
-                  <button
-                    onClick={handleUpdateName}
-                    className="w-[30px] h-[30px] md:w-auto md:h-auto flex items-center justify-center bg-green-500 text-white p-2 rounded-md"
-                  >
-                    <FaCheck className="text-lg" />
-                  </button>
-                  <button
-                    onClick={exitHandleUpdateName}
-                    className="w-[30px] h-[30px] md:w-auto md:h-auto flex items-center justify-center bg-red-500 text-white p-2 rounded-md"
-                  >
-                    <FaTimes className="text-xl" />
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <div className="flex w-full justify-between sm:flex-col lg:flex-row">
-                <p className="text-base sm:text-xl ml-1">{nomeUser}</p>
-                <MdEdit
-                  className="text-base sm:text-xl cursor-pointer sm:mt-4"
-                  onClick={() => setEditing(true)}
-                />
-              </div>
-            )}
-          </div>
-        </div>
-
-        <div className="mt-[60px] flex justify-center">
-          <button
-            onClick={() => logOut()}
-            className="p-1 bg-[#8ab3cf] text-black w-[80px] rounded-xl"
-          >
-            Sair
-          </button>
-        </div>
-      </div>
-    );
+    return <Perfil />
   };
 
   return (

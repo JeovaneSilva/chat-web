@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { UserProvider } from "@/context/UserContext";
 
 export const metadata: Metadata = {
   title: "ChatWeb",
@@ -13,9 +14,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pt-br">
-      <body
-      >
-        {children}
+      <body>
+        <UserProvider>{children}</UserProvider>
       </body>
     </html>
   );
