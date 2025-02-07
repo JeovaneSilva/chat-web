@@ -5,7 +5,6 @@ import { buscarUsuario, Cadastrar, Logar } from "@/services/userService";
 import AvatarEditor from "react-avatar-editor";
 import Cookies from "js-cookie";
 import { jwtDecode, JwtPayload } from "jwt-decode";
-import useChat from "./useChat";
 import { useUserContext } from "@/context/UserContext";
 
 const defaultProfilePicture = "/assets/defaultProfile.png";
