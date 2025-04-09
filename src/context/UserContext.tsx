@@ -1,9 +1,10 @@
 "use client";
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState, useCallback } from "react";
 import Cookies from "js-cookie";
 import { jwtDecode } from "jwt-decode";
 import { buscarUsuario } from "@/services/userService";
 import { usePathname, useRouter } from "next/navigation";
+import { DecodedToken } from "@/types/User";
 
 interface UserContextType {
   userId: number;
@@ -26,22 +27,33 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
 
   const isTokenValid = (token: string): boolean => {
     try {
-      const decoded: any = jwtDecode(token);
+      const decoded: DecodedToken = jwtDecode(token);
       return decoded.exp * 1000 > Date.now();
     } catch {
       return false;
     }
   };
 
-  const verifyAndFetchUser = async () => {
+  const logOut = useCallback(() => {
+    Cookies.remove("token");
+    setUserId(0);
+    setNomeUser("");
+    setFotoPerfil("");
+
+    if (pathname !== "/") {
+      router.push("/");
+    }
+  }, [pathname, router]);
+
+  const verifyAndFetchUser = useCallback(async () => {
     const token = Cookies.get("token");
 
     if (!token || !isTokenValid(token)) {
-      logOut(); // Se o token for inválido, faz logout
+      logOut();
       return;
     }
 
-    const decoded: any = jwtDecode(token);
+    const decoded: DecodedToken = jwtDecode(token);
     if (decoded) {
       setUserId(decoded.sub);
       try {
@@ -51,27 +63,14 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
         setNomeUser(data.name);
       } catch (error) {
         console.error("Erro ao buscar usuário:", error);
-        logOut(); // Se falhar ao buscar, também pode forçar logout
+        logOut();
       }
     }
-  };
+  }, [logOut]);
 
   useEffect(() => {
     verifyAndFetchUser();
-  }, []);
-
-  const logOut = () => {
-    Cookies.remove("token");
-    setUserId(0);
-    setNomeUser("");
-    setFotoPerfil("");
-  
-    if (pathname !== "/") {
-      router.push("/");
-    }
-  };
-  
-  
+  }, [verifyAndFetchUser]);
 
   return (
     <UserContext.Provider

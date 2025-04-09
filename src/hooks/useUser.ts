@@ -23,7 +23,7 @@ const useUser = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const { setNomeUser, setFotoPerfil, setUserId, logOut } = useUserContext();
+  const { setNomeUser, setFotoPerfil, setUserId } = useUserContext();
 
   // LOGIN
   const loginUser = async (e: React.FormEvent) => {
