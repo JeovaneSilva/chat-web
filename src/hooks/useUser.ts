@@ -23,40 +23,38 @@ const useUser = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const { setNomeUser, setFotoPerfil,setUserId } = useUserContext();
+  const { setNomeUser, setFotoPerfil, setUserId, logOut } = useUserContext();
 
-  //  LOGIN
+  // LOGIN
   const loginUser = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setErrorMessage(null);
-  
+
     try {
       if (!email || !senha) {
         throw new Error("Preencha todos os campos.");
       }
-  
+
       const res = await Logar(email, senha);
-  
+
       if (!res.ok) {
         throw new Error("Email ou senha inválidos.");
       }
-  
+
       const data = await res.json();
-      const token = await data.access_token;
-      console.log("token login", token)
-  
-      setCookie("token", token, 1);
-  
-      if (token) {
-        // Decodifica e atualiza o contexto global
-        const decodedToken = decodeToken(token);
+      const access_token = data.access_token;
+
+      setCookie("token", access_token, 1 / 96); // 15 minutos
+
+      if (access_token) {
+        const decodedToken = decodeToken(access_token);
         if (decodedToken) {
-          setUserId(decodedToken.sub)
+          setUserId(decodedToken.sub);
           setNomeUser(decodedToken.username);
           setFotoPerfil(decodedToken.foto);
         }
-  
+
         router.push("/chat");
       } else {
         throw new Error("Token de acesso não encontrado.");
@@ -67,8 +65,7 @@ const useUser = () => {
     setLoading(false);
   };
 
-  //   CADASTRO
-  // Função para avançar as etapas
+  // CADASTRO
   const nextStep = (e: React.FormEvent) => {
     e.preventDefault();
     if (step === 1) {
@@ -86,7 +83,6 @@ const useUser = () => {
     if (step > 1) setStep(step - 1);
   };
 
-  // Função para enviar os dados de cadastro
   const cadastrarUsuario = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -105,20 +101,10 @@ const useUser = () => {
     formData.append("password", senha);
 
     if (profilePictureBlob) {
-      formData.append(
-        "profilePicture",
-        profilePictureBlob,
-        "profilePicture.png"
-      );
+      formData.append("profilePicture", profilePictureBlob, "profilePicture.png");
     } else {
-      const defaultPictureBlob = await fetch(defaultProfilePicture).then(
-        (res) => res.blob()
-      );
-      formData.append(
-        "profilePicture",
-        defaultPictureBlob,
-        "defaultProfile.png"
-      );
+      const defaultPictureBlob = await fetch(defaultProfilePicture).then((res) => res.blob());
+      formData.append("profilePicture", defaultPictureBlob, "defaultProfile.png");
     }
 
     try {
@@ -132,7 +118,7 @@ const useUser = () => {
       const data = await res.json();
       const token = data.access_token;
 
-      document.cookie = `token=${token}; path=/; max-age=86400`;
+      document.cookie = `token=${token}; path=/; max-age=900`; // 15 minutos
 
       router.push("/");
     } catch (error) {
@@ -141,7 +127,6 @@ const useUser = () => {
     setLoading(false);
   };
 
-  // Função para lidar com o upload de imagem
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -157,21 +142,19 @@ const useUser = () => {
     setShowConfirmPassword((prev) => !prev);
   };
 
-
   useEffect(() => {
-    const checkToken = async () => {
+    const checkToken = () => {
       const token = Cookies.get("token");
 
       if (token) {
         try {
           const decoded = jwtDecode<JwtPayload>(token);
 
-          // Verifica se o token está expirado
           if (decoded.exp && decoded.exp * 1000 > Date.now()) {
-            router.push("/chat"); // Token válido
+            router.push("/chat");
           } else {
             console.warn("Token expirado.");
-            Cookies.remove("token"); // Remove o token expirado
+            Cookies.remove("token");
           }
         } catch (error) {
           console.error("Erro ao decodificar token:", error);
@@ -208,7 +191,7 @@ const useUser = () => {
     showPassword,
     toggleConfirmPasswordVisibility,
     showConfirmPassword,
-    errorMessage
+    errorMessage,
   };
 };
 

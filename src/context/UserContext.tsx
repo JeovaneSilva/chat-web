@@ -1,8 +1,9 @@
-"use client"
+"use client";
 import { createContext, useContext, useEffect, useState } from "react";
 import Cookies from "js-cookie";
+import { jwtDecode } from "jwt-decode";
 import { buscarUsuario } from "@/services/userService";
-import { decodeToken } from "@/utils/token";
+import { usePathname, useRouter } from "next/navigation";
 
 interface UserContextType {
   userId: number;
@@ -17,33 +18,46 @@ interface UserContextType {
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export const UserProvider = ({ children }: { children: React.ReactNode }) => {
+  const pathname = usePathname();
+  const router = useRouter();
   const [userId, setUserId] = useState<number>(0);
   const [nomeUser, setNomeUser] = useState<string>("");
   const [fotoPerfil, setFotoPerfil] = useState<string>("");
 
-  useEffect(() => {
-    const fetchAndDecodeToken = async () => {
-      const token =  Cookies.get("token");
-      console.log("teste")
-      console.log(token)
-      if (token) {
-        const decodedToken = decodeToken(token);
-        if (decodedToken) {
-          setUserId(decodedToken.sub);
+  const isTokenValid = (token: string): boolean => {
+    try {
+      const decoded: any = jwtDecode(token);
+      return decoded.exp * 1000 > Date.now();
+    } catch {
+      return false;
+    }
+  };
 
-          try {
-            const res = await buscarUsuario(decodedToken.sub);
-            const data = await res.json();
-            setFotoPerfil(data.profilePicture);
-            setNomeUser(data.name);
-          } catch (error) {
-            console.error("Erro ao buscar dados do usuário:", error);
-          }
-        }
+  const verifyAndFetchUser = async () => {
+    const token = Cookies.get("token");
+
+    if (!token || !isTokenValid(token)) {
+      logOut(); // Se o token for inválido, faz logout
+      return;
+    }
+
+    const decoded: any = jwtDecode(token);
+    if (decoded) {
+      setUserId(decoded.sub);
+      try {
+        const res = await buscarUsuario(decoded.sub);
+        const data = await res.json();
+        setFotoPerfil(data.profilePicture);
+        setNomeUser(data.name);
+      } catch (error) {
+        console.error("Erro ao buscar usuário:", error);
+        logOut(); // Se falhar ao buscar, também pode forçar logout
       }
-    };
+    }
+  };
 
-    fetchAndDecodeToken();
+  useEffect(() => {
+    verifyAndFetchUser();
   }, []);
 
   const logOut = () => {
@@ -51,11 +65,26 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
     setUserId(0);
     setNomeUser("");
     setFotoPerfil("");
-    window.location.href = "/"; // Redirecionar para a página inicial
+  
+    if (pathname !== "/") {
+      router.push("/");
+    }
   };
+  
+  
 
   return (
-    <UserContext.Provider value={{ userId, nomeUser, fotoPerfil, setNomeUser, setFotoPerfil,setUserId, logOut }}>
+    <UserContext.Provider
+      value={{
+        userId,
+        nomeUser,
+        fotoPerfil,
+        setNomeUser,
+        setFotoPerfil,
+        setUserId,
+        logOut,
+      }}
+    >
       {children}
     </UserContext.Provider>
   );

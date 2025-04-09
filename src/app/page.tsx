@@ -14,7 +14,7 @@ const Login = () => {
     loading,
     togglePasswordVisibility,
     showPassword,
-    errorMessage
+    errorMessage,
   } = useUser();
 
   return (
@@ -68,7 +68,9 @@ const Login = () => {
             </div>
 
             {errorMessage && ( // Exibe a mensagem de erro
-              <div className="mb-1 text-red-500 flex items-center justify-center text-sm">{errorMessage}</div>
+              <div className="mb-1 text-red-500 flex items-center justify-center text-sm">
+                {errorMessage}
+              </div>
             )}
 
             <div className="mb-5 text-right">
