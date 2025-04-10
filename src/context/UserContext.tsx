@@ -1,5 +1,5 @@
 "use client";
-import { createContext, useContext, useEffect, useState, useCallback } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import Cookies from "js-cookie";
 import { jwtDecode } from "jwt-decode";
 import { buscarUsuario } from "@/services/userService";
@@ -34,26 +34,15 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
-  const logOut = useCallback(() => {
-    Cookies.remove("token");
-    setUserId(0);
-    setNomeUser("");
-    setFotoPerfil("");
-
-    if (pathname !== "/") {
-      router.push("/");
-    }
-  }, [pathname, router]);
-
-  const verifyAndFetchUser = useCallback(async () => {
+  const verifyAndFetchUser = async () => {
     const token = Cookies.get("token");
 
     if (!token || !isTokenValid(token)) {
-      logOut();
+      logOut(); // Se o token for inválido, faz logout
       return;
     }
 
-    const decoded: DecodedToken = jwtDecode(token);
+    const decoded: DecodedToken  = jwtDecode(token);
     if (decoded) {
       setUserId(decoded.sub);
       try {
@@ -63,14 +52,27 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
         setNomeUser(data.name);
       } catch (error) {
         console.error("Erro ao buscar usuário:", error);
-        logOut();
+        logOut(); // Se falhar ao buscar, também pode forçar logout
       }
     }
-  }, [logOut]);
+  };
 
   useEffect(() => {
     verifyAndFetchUser();
-  }, [verifyAndFetchUser]);
+  }, []);
+
+  const logOut = () => {
+    Cookies.remove("token");
+    setUserId(0);
+    setNomeUser("");
+    setFotoPerfil("");
+  
+    if (pathname !== "/") {
+      router.push("/");
+    }
+  };
+  
+  
 
   return (
     <UserContext.Provider
