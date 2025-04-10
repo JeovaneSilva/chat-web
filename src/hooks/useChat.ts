@@ -313,11 +313,11 @@ const useChat = () => {
 
    /* ------------------ useEffects ------------------ */
 
-   useEffect(() => {
+  useEffect(() => {
     if (userId) {
       fetchConversations();
     }
-  }, [userId, fetchConversations]);
+  }, [userId]);
 
   useEffect(() => {
     socket.on("message", (message: Message) => {
@@ -343,7 +343,7 @@ const useChat = () => {
 
   useEffect(() => {
     fetchInvites();
-  }, [userId, fetchInvites]);
+  }, [userId]);
 
   return {
     conversations,
