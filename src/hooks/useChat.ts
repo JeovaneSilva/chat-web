@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Conversation, Message } from "@/types/Chat";
 import { User } from "@/types/User";
 import { Invite } from "@/types/Invites";
@@ -67,7 +67,7 @@ const useChat = () => {
  
   // ############## Funções de Conversas #################
 
-  const fetchConversations = useCallback(async () => {
+  const fetchConversations = async () => {
     try {
       const data = await BuscarConversa(userId);
       setConversations(data);
@@ -75,8 +75,7 @@ const useChat = () => {
       console.error("Erro ao buscar conversas:", error);
       setConversations([]);
     }
-  }, [userId]);
-  
+  };
 
   const selectConversation = async (conversationId: number) => {
     setSelectedConversation(conversationId);
@@ -140,7 +139,7 @@ const useChat = () => {
 
   // ############## Funções de convites #################
 
-  const fetchInvites = useCallback(async () => {
+  const fetchInvites = async () => {
     try {
       const data = await BuscarConvites(userId);
       setSentInvites(data.sentInvites);
@@ -148,8 +147,7 @@ const useChat = () => {
     } catch (error) {
       console.error("Erro ao buscar convites:", error);
     }
-  }, [userId]);
-  
+  };
 
   const convidar = async (recepId: number) => {
     setLoading(true);
